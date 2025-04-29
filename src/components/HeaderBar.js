@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Dropdown, Menu, Avatar, Typography, Badge, message } from "antd";
+import {
+  Layout,
+  Dropdown,
+  Menu,
+  Avatar,
+  Typography,
+  Badge,
+  message,
+} from "antd";
 import { BellOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
@@ -165,7 +173,9 @@ const HeaderBar = () => {
           }
           trigger={["click"]}
         >
-          <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+          <div
+            style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+          >
             <Avatar icon={<UserOutlined />} style={{ marginRight: "8px" }} />
             <Text>{userName}</Text>
           </div>

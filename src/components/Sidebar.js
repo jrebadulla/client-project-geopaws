@@ -61,11 +61,15 @@ const Sidebar = () => {
         }}
       >
         {/* Home */}
-        <Menu.Item key="1" icon={<HomeOutlined style={{ color: "#1e88e5" }} />} onClick={() => handleNavigate("/")}>
+        <Menu.Item
+          key="1"
+          icon={<HomeOutlined style={{ color: "#1e88e5" }} />}
+          onClick={() => handleNavigate("/")}
+        >
           Home
         </Menu.Item>
 
-        {/* Pets (Submenu) */}
+        {/* Pets (Submenu)
         <SubMenu
           key="sub1"
           icon={<AppstoreOutlined style={{ color: "#1e88e5" }} />}
@@ -77,15 +81,15 @@ const Sidebar = () => {
             onClick={() => handleNavigate("/add-pets")}
           >
             Add Pets
-          </Menu.Item>
-          <Menu.Item
-            key="3"
-            icon={<SettingOutlined style={{ color: "#1e88e5" }} />}
-            onClick={() => handleNavigate("/manage-pets")}
-          >
-            Manage Pets
-          </Menu.Item>
-        </SubMenu>
+          </Menu.Item> */}
+        <Menu.Item
+          key="3"
+          icon={<SettingOutlined style={{ color: "#1e88e5" }} />}
+          onClick={() => handleNavigate("/manage-pets")}
+        >
+          Manage Pets
+        </Menu.Item>
+        {/* </SubMenu> */}
 
         {/* Pet Reports */}
         <Menu.Item
