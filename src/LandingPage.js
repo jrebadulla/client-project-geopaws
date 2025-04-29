@@ -32,6 +32,8 @@ import HeaderBar from "./components/HeaderBar";
 import { db } from "./firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import "./LandingPage.css";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -53,6 +55,8 @@ const LandingPage = ({ adminName }) => {
   const [tableData, setTableData] = useState([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [filteredTableData, setFilteredTableData] = useState([]);
+  const [concernFilters, setConcernFilters] = useState([]);
 
   const handleCardClick = async (category) => {
     setSelectedCategory(category);
@@ -68,21 +72,103 @@ const LandingPage = ({ adminName }) => {
         }));
         setTableData(usersData);
       } else if (category === "pendingReports") {
-        const pendingReportsSnapshot = await getDocs(
-          query(collection(db, "reports"), where("status", "==", "Pending"))
-        );
-        const pendingReportsData = pendingReportsSnapshot.docs.map((doc) => ({
+        const adoptionPetsSnapshot = await getDocs(collection(db, "pet"));
+        const adoptionPetsData = adoptionPetsSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setTableData(pendingReportsData);
+        setTableData(adoptionPetsData);
+      } else if (category === "closedReports") {
+        const petReportsSnapshot = await getDocs(collection(db, "pet_reports"));
+        const petReportsData = petReportsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setTableData(petReportsData);
+        const uniqueConcerns = Array.from(
+          new Set(petReportsData.map((doc) => doc.pet_name))
+        ).map((concern) => ({
+          text: concern,
+          value: concern,
+        }));
+
+        setConcernFilters(uniqueConcerns);
+      } else if (category === "closedReports") {
+        const petReportsSnapshot = await getDocs(collection(db, "pet_reports"));
+        const petReportsData = petReportsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTableData(petReportsData);
+      } else if (category === "resolvedReports") {
+        const reportsResolvedSnapshot = await getDocs(
+          query(collection(db, "reports"), where("status", "==", "Resolved"))
+        );
+        const reportsResolvedData = reportsResolvedSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTableData(reportsResolvedData);
+      } else if (category === "pendingRequests") {
+        const requestsPendingSnapshot = await getDocs(
+          query(collection(db, "request"))
+        );
+        const requestsPendingData = requestsPendingSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTableData(requestsPendingData);
       }
-      // Add more categories if needed
     } catch (error) {
       console.error("Error fetching table data:", error);
     } finally {
       setTableLoading(false);
     }
+  };
+
+  const handlePrint = () => {
+    const doc = new jsPDF({ orientation: "landscape" });
+
+    const columns = getColumns(selectedCategory)
+      .filter((col) => col.dataIndex !== "images")
+      .map((col) => ({
+        header: col.title,
+        dataKey: col.dataIndex,
+      }));
+
+    const dataToPrint =
+      filteredTableData.length > 0 ? filteredTableData : tableData;
+
+    const rows = dataToPrint.map((item) => {
+      const row = {};
+      columns.forEach((col) => {
+        row[col.dataKey] = item[col.dataKey] || "";
+      });
+      return row;
+    });
+
+    doc.setFontSize(16);
+    doc.text(getModalTitle(selectedCategory), 14, 20);
+
+    autoTable(doc, {
+      startY: 28,
+      head: [columns.map((col) => col.header)],
+      body: rows.map((row) => columns.map((col) => row[col.dataKey])),
+      styles: {
+        fontSize: 10,
+        overflow: "linebreak",
+        cellWidth: "wrap",
+      },
+      margin: { top: 30, left: 10, right: 10 },
+      theme: "grid",
+      headStyles: { fillColor: [24, 144, 255] },
+      didDrawPage: (data) => {
+        doc.setFontSize(16);
+        doc.text(getModalTitle(selectedCategory), 14, 20);
+      },
+    });
+    doc.save(`${getModalTitle(selectedCategory)}.pdf`);
   };
 
   const getColumns = (category) => {
@@ -96,31 +182,136 @@ const LandingPage = ({ adminName }) => {
         { title: "Age", dataIndex: "age", key: "age" },
         { title: "Type", dataIndex: "type", key: "type" },
       ];
-    } else if (
-      category === "pendingReports" ||
-      category === "closedReports" ||
-      category === "resolvedReports"
-    ) {
-      return [
-        { title: "Title", dataIndex: "title", key: "title" },
-        { title: "Description", dataIndex: "description", key: "description" },
-        { title: "Status", dataIndex: "status", key: "status" },
-        { title: "Reported By", dataIndex: "reportedBy", key: "reportedBy" },
-        { title: "Date", dataIndex: "date", key: "date" },
-      ];
     } else if (category === "pendingRequests") {
       return [
-        { title: "Request Title", dataIndex: "title", key: "title" },
+        { title: "Full Name", dataIndex: "fullname", key: "fullname" },
+        { title: "Pet ID", dataIndex: "petId", key: "petId" },
         {
-          title: "Request Description",
-          dataIndex: "description",
-          key: "description",
+          title: "Status",
+          dataIndex: "status",
+          key: "status",
+          filters: [
+            { text: "Pending", value: "Pending" },
+            { text: "Approved", value: "Approved" },
+            { text: "Declined", value: "Declined" },
+          ],
+          onFilter: (value, record) => record.status === value,
         },
-        { title: "Status", dataIndex: "status", key: "status" },
-        { title: "Requested By", dataIndex: "requestedBy", key: "requestedBy" },
-        { title: "Date", dataIndex: "date", key: "date" },
+
+        { title: "User ID", dataIndex: "uid", key: "uid" },
+      ];
+    } else if (category === "closedReports") {
+      return [
+        {
+          title: "Concern",
+          dataIndex: "pet_name",
+          key: "pet_name",
+          filters: concernFilters, // 🔥 use dynamic filters
+          onFilter: (value, record) => record.pet_name === value,
+        },
+
+        {
+          title: "Location",
+          dataIndex: "location_lost",
+          key: "location_lost",
+        },
+        { title: "Date", dataIndex: "date_lost", key: "date_lost" },
+        { title: "Time", dataIndex: "time_lost", key: "time_lost" },
+        {
+          title: "Additional Info",
+          dataIndex: "additional_info",
+          key: "additional_info",
+        },
+        {
+          title: "Status",
+          dataIndex: "status",
+          key: "status",
+          filters: [
+            { text: "In Progress", value: "In Progress" },
+            { text: "Resolved", value: "Resolved" },
+            { text: "Cancel", value: "Cancel" },
+            { text: "Closed", value: "Closed" },
+          ],
+          onFilter: (value, record) => record.status === value,
+        },
+        { title: "Reported By", dataIndex: "user", key: "user" },
+        {
+          title: "Image",
+          dataIndex: "image",
+          key: "image",
+          render: (img) =>
+            img ? (
+              <img
+                src={img}
+                alt="Lost Pet"
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  objectFit: "cover",
+                  borderRadius: "5px",
+                }}
+              />
+            ) : (
+              "No Image"
+            ),
+        },
+      ];
+    } else if (category === "pendingReports") {
+      // Adoption pets
+      return [
+        { title: "Pet Name", dataIndex: "pet_name", key: "pet_name" },
+        { title: "Type", dataIndex: "type", key: "type" },
+        { title: "Sex", dataIndex: "sex", key: "sex" },
+        { title: "Age", dataIndex: "age", key: "age" },
+        { title: "Color", dataIndex: "color", key: "color" },
+        { title: "Size", dataIndex: "size", key: "size" },
+        {
+          title: "Health Status",
+          dataIndex: "health_issues",
+          key: "health_issues",
+        },
+        {
+          title: "Additional Details",
+          dataIndex: "additional_details",
+          key: "additional_details",
+        },
+        {
+          title: "Rescue Location",
+          dataIndex: "rescue_location",
+          key: "rescue_location",
+        },
+        { title: "Arrival Date", dataIndex: "arrivaldate", key: "arrivaldate" },
+        {
+          title: "Status",
+          dataIndex: "status",
+          key: "status",
+          filters: [
+            { text: "Available", value: "Available" },
+            { text: "Adopted", value: "Adopted" },
+          ],
+          onFilter: (value, record) => record.status === value,
+        },
+
+        {
+          title: "Image",
+          dataIndex: "images",
+          key: "images",
+          render: (img) => (
+            <img
+              src={img}
+              alt="Pet"
+              style={{
+                width: "80px",
+                height: "80px",
+                objectFit: "cover",
+                borderRadius: "5px",
+              }}
+            />
+          ),
+        },
       ];
     }
+
     return [];
   };
 
@@ -129,13 +320,13 @@ const LandingPage = ({ adminName }) => {
       case "users":
         return "User Details";
       case "pendingReports":
-        return "Pending Reports Details";
+        return "Adoption Details";
       case "closedReports":
-        return "Closed Reports Details";
+        return "Pet Reports Details";
       case "resolvedReports":
-        return "Resolved Reports Details";
+        return "Stray Animal Reports Details";
       case "pendingRequests":
-        return "Pending Requests Details";
+        return "Pet Adoption Details";
       default:
         return "Details";
     }
@@ -148,11 +339,11 @@ const LandingPage = ({ adminName }) => {
         const usersSnapshot = await getDocs(collection(db, "users"));
 
         // Reports with status filters
-        const reportsPendingSnapshot = await getDocs(
-          query(collection(db, "reports"), where("status", "==", "Pending"))
+        const availablePetsSnapshot = await getDocs(
+          query(collection(db, "pet"))
         );
         const reportsClosedSnapshot = await getDocs(
-          query(collection(db, "reports"), where("status", "==", "Closed"))
+          query(collection(db, "pet_reports"))
         );
         const reportsResolvedSnapshot = await getDocs(
           query(collection(db, "reports"), where("status", "==", "Resolved"))
@@ -160,12 +351,12 @@ const LandingPage = ({ adminName }) => {
 
         // Requests with status filters
         const requestsPendingSnapshot = await getDocs(
-          query(collection(db, "request"), where("status", "==", "Pending"))
+          query(collection(db, "request"))
         );
 
         setDataSummary({
           usersCount: usersSnapshot.size,
-          reportsPending: reportsPendingSnapshot.size,
+          reportsPending: availablePetsSnapshot.size,
           reportsClosed: reportsClosedSnapshot.size,
           reportsResolved: reportsResolvedSnapshot.size,
           requestsPending: requestsPendingSnapshot.size,
@@ -173,7 +364,7 @@ const LandingPage = ({ adminName }) => {
 
         setGraphData([
           { name: "Users", count: usersSnapshot.size },
-          { name: "Pending Reports", count: reportsPendingSnapshot.size },
+          { name: "Adoption", count: availablePetsSnapshot.size },
           { name: "Closed Reports", count: reportsClosedSnapshot.size },
           { name: "Resolved Reports", count: reportsResolvedSnapshot.size },
           { name: "Pending Requests", count: requestsPendingSnapshot.size },
@@ -259,7 +450,7 @@ const LandingPage = ({ adminName }) => {
                       }}
                     />
                     <Title level={4}>{dataSummary.reportsPending}</Title>
-                    <Text>Pending Reports</Text>
+                    <Text>Pet Lists</Text>
                   </Card>
                 </Col>
 
@@ -278,10 +469,10 @@ const LandingPage = ({ adminName }) => {
                       }}
                     />
                     <Title level={4}>{dataSummary.reportsClosed}</Title>
-                    <Text>Closed Reports</Text>
+                    <Text>Pet Reports</Text>
                   </Card>
                 </Col>
-                <Col xs={24} sm={12} md={8}>
+                {/* <Col xs={24} sm={12} md={8}>
                   <Card
                     hoverable
                     bordered
@@ -296,9 +487,9 @@ const LandingPage = ({ adminName }) => {
                       }}
                     />
                     <Title level={4}>{dataSummary.reportsResolved}</Title>
-                    <Text>Resolved Reports</Text>
+                    <Text>Stray Animal Reports</Text>
                   </Card>
-                </Col>
+                </Col> */}
                 <Col xs={24} sm={12} md={8}>
                   <Card
                     hoverable
@@ -314,7 +505,7 @@ const LandingPage = ({ adminName }) => {
                       }}
                     />
                     <Title level={4}>{dataSummary.requestsPending}</Title>
-                    <Text>Pending Requests</Text>
+                    <Text>Pet Adoption</Text>
                   </Card>
                 </Col>
               </Row>
@@ -372,6 +563,10 @@ const LandingPage = ({ adminName }) => {
             footer={null}
             width="80%"
             centered
+            bodyStyle={{
+              maxHeight: "70vh",
+              overflowY: "auto",
+            }}
           >
             <Table
               dataSource={tableData}
@@ -380,9 +575,12 @@ const LandingPage = ({ adminName }) => {
               loading={tableLoading}
               pagination={{ pageSize: 5 }}
               scroll={{ x: true }}
+              onChange={(pagination, filters, sorter, extra) => {
+                setFilteredTableData(extra.currentDataSource);
+              }}
             />
-            <Button className="print-button">
-              Print <PrinterOutlined />{" "}
+            <Button className="print-button" onClick={handlePrint}>
+              Print <PrinterOutlined />
             </Button>
           </Modal>
         </Content>

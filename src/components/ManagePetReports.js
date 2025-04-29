@@ -84,12 +84,12 @@ const ManagePetReports = ({ adminName }) => {
       key: "pet_name",
     },
     {
-      title: "Date Lost",
+      title: "Date ",
       dataIndex: "date_lost",
       key: "date_lost",
     },
     {
-      title: "Location Lost",
+      title: "Location",
       dataIndex: "location_lost",
       key: "location_lost",
     },
@@ -120,7 +120,7 @@ const ManagePetReports = ({ adminName }) => {
           <Button type="primary" onClick={() => handleViewDetails(record.id)}>
             View Details
           </Button>
-          <Button type="link" danger onClick={() => handleDelete(record.id)}>
+          <Button danger type="primary" onClick={() => handleDelete(record.id)}>
             Delete
           </Button>
         </Space>
