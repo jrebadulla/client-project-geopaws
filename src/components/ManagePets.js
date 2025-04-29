@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
+import "./ManagePets.css";
 import {
   Table,
   Modal,
@@ -15,19 +16,25 @@ import {
   Descriptions,
   message,
   Image,
+  Space,
 } from "antd";
 import Sidebar from "./Sidebar";
 import HeaderBar from "./HeaderBar"; // Import the reusable header component
+import { PlusOneOutlined } from "@mui/icons-material";
+import { PlusCircleOutlined } from "@ant-design/icons";
+import AddPetsForm from "./AddPets";
 
 const { Text, Title } = Typography;
 const { confirm } = Modal;
 const { Option } = Select;
+const { Search } = Input;
 
 const ManagePets = ({ adminName }) => {
   const [pets, setPets] = useState([]);
   const [filteredPets, setFilteredPets] = useState([]);
   const [selectedPet, setSelectedPet] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
 
   // Filter states
   const [searchType, setSearchType] = useState("");
@@ -57,16 +64,19 @@ const ManagePets = ({ adminName }) => {
     fetchPets();
   }, []);
 
-  // Handle Search by Type
   const handleSearchType = (value) => {
     setSearchType(value);
+
     if (value) {
       const filtered = pets.filter((pet) =>
-        pet.type.toLowerCase().includes(value.toLowerCase())
+        (pet.type || "")
+          .toLowerCase()
+          .trim()
+          .includes(value.toLowerCase().trim())
       );
       setFilteredPets(filtered);
     } else {
-      setFilteredPets(pets); // Reset if search is cleared
+      setFilteredPets(pets);
     }
   };
 
@@ -81,14 +91,18 @@ const ManagePets = ({ adminName }) => {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
-        <>
-          <Button type="link" onClick={() => showModal(record)}>
+        <Space>
+          <Button type="primary" onClick={() => showModal(record)}>
             View More
           </Button>
-          <Button type="link" danger onClick={() => showDeleteConfirm(record.id)}>
+          <Button
+            danger
+            type="primary"
+            onClick={() => showDeleteConfirm(record.id)}
+          >
             Delete
           </Button>
-        </>
+        </Space>
       ),
     },
   ];
@@ -145,9 +159,22 @@ const ManagePets = ({ adminName }) => {
             </Title>
 
             {/* Search Filter */}
-            <Row gutter={[16, 16]} style={{ marginBottom: "20px" }}>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: "20px" }}
+            >
+              <Col>
+                <Button
+                  type="primary"
+                  icon={<PlusCircleOutlined />}
+                  onClick={() => setIsAddModalVisible(true)}
+                >
+                  Add Pet
+                </Button>
+              </Col>
               <Col xs={24} sm={8}>
-                <Input
+                <Search
                   placeholder="Search by Type"
                   allowClear
                   value={searchType}
@@ -168,16 +195,23 @@ const ManagePets = ({ adminName }) => {
               rowKey="id"
               pagination={false}
             />
-            <Pagination
-              current={currentPage}
-              pageSize={pageSize}
-              total={filteredPets.length}
-              onChange={(page, pageSize) => {
-                setCurrentPage(page);
-                setPageSize(pageSize);
+            <div
+              style={{
+                marginTop: "20px",
+                display: "flex",
+                justifyContent: "flex-end",
               }}
-              style={{ marginTop: "20px", textAlign: "center" }}
-            />
+            >
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredPets.length}
+                onChange={(page, pageSize) => {
+                  setCurrentPage(page);
+                  setPageSize(pageSize);
+                }}
+              />
+            </div>
           </Card>
 
           {/* Modal for Pet Details */}
@@ -187,6 +221,10 @@ const ManagePets = ({ adminName }) => {
             footer={null}
             centered
             width={600} // Keeps it clean and compact
+            bodyStyle={{
+              height: "500px", // Set your fixed height
+              overflowY: "auto", // Enable vertical scrolling
+            }}
           >
             {selectedPet && (
               <div
@@ -212,47 +250,105 @@ const ManagePets = ({ adminName }) => {
                 />
 
                 {/* Pet Name */}
-                <Title level={3} style={{ marginBottom: "5px", fontWeight: "600" }}>
+                <Title
+                  level={3}
+                  style={{ marginBottom: "5px", fontWeight: "600" }}
+                >
                   {selectedPet.pet_name || "No Name"}
                 </Title>
 
                 {/* Status */}
-                <Text type="secondary" style={{ fontSize: "16px", marginBottom: "20px" }}>
+                <Text
+                  type="secondary"
+                  style={{ fontSize: "16px", marginBottom: "20px" }}
+                >
                   {selectedPet.status || "Unknown Status"}
                 </Text>
 
                 {/* Pet Details */}
-                <Descriptions bordered column={2} size="small" style={{ width: "100%" }}>
+                <Descriptions
+                  bordered
+                  column={1}
+                  size="small"
+                  style={{ width: "100%" }}
+                >
+                  {/* Pet Image (Optional) */}
+
+                  {/* Pet Name */}
+                  <Descriptions.Item label="Name">
+                    {selectedPet.pet_name || "Unknown"}
+                  </Descriptions.Item>
+
+                  {/* Type */}
                   <Descriptions.Item label="Type">
-                    {selectedPet.type}
+                    {selectedPet.type || "Unknown"}
                   </Descriptions.Item>
+
+                  {/* Age */}
                   <Descriptions.Item label="Age">
-                    {selectedPet.age}
+                    {selectedPet.age || "Unknown"}
                   </Descriptions.Item>
+
+                  {/* Color */}
                   <Descriptions.Item label="Color">
-                    {selectedPet.color}
+                    {selectedPet.color || "Unknown"}
                   </Descriptions.Item>
+
+                  {/* Sex */}
                   <Descriptions.Item label="Sex">
-                    {selectedPet.sex}
+                    {selectedPet.sex || "Unknown"}
                   </Descriptions.Item>
+
+                  {/* Size */}
                   <Descriptions.Item label="Size">
-                    {selectedPet.sizeweight}
+                    {selectedPet.size || "Unknown"}
                   </Descriptions.Item>
+
+                  {/* Status */}
+                  <Descriptions.Item label="Status">
+                    {selectedPet.status || "Unknown"}
+                  </Descriptions.Item>
+
+                  {/* Arrival Date */}
                   <Descriptions.Item label="Arrival Date">
-                    {selectedPet.arrivaldate}
+                    {selectedPet.arrivaldate || "Unknown"}
                   </Descriptions.Item>
+
+                  {/* Health Issues */}
                   <Descriptions.Item label="Health Issues">
                     {selectedPet.health_issues || "None"}
                   </Descriptions.Item>
+
+                  {/* Rescue Location */}
                   <Descriptions.Item label="Rescue Location">
                     {selectedPet.rescue_location || "Unknown"}
                   </Descriptions.Item>
+
+                  {/* Additional Details */}
                   <Descriptions.Item label="Additional Details" span={2}>
                     {selectedPet.additional_details || "None"}
                   </Descriptions.Item>
                 </Descriptions>
               </div>
             )}
+          </Modal>
+          <Modal
+            visible={isAddModalVisible}
+            onCancel={() => setIsAddModalVisible(false)}
+            footer={null}
+            centered
+            width={600}
+            bodyStyle={{
+              height: "500px", // Set your fixed height
+              overflowY: "auto", // Enable vertical scrolling
+            }}
+          >
+            <AddPetsForm
+              onFinishSuccess={() => {
+                fetchPets(); // Refresh pets list
+                setIsAddModalVisible(false); // Close modal
+              }}
+            />
           </Modal>
         </div>
       </div>

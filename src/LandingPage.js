@@ -10,7 +10,12 @@ import {
   Modal,
   Table,
 } from "antd";
-import { UserOutlined, FileOutlined, SettingOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  FileOutlined,
+  SettingOutlined,
+  PrinterOutlined,
+} from "@ant-design/icons";
 import {
   BarChart,
   Bar,
@@ -26,6 +31,7 @@ import Sidebar from "./components/Sidebar";
 import HeaderBar from "./components/HeaderBar";
 import { db } from "./firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import "./LandingPage.css";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -235,7 +241,7 @@ const LandingPage = ({ adminName }) => {
                       }}
                     />
                     <Title level={4}>{dataSummary.usersCount}</Title>
-                    <Text>Total Users</Text>
+                    <Text>Member</Text>
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} md={8}>
@@ -375,6 +381,9 @@ const LandingPage = ({ adminName }) => {
               pagination={{ pageSize: 5 }}
               scroll={{ x: true }}
             />
+            <Button className="print-button">
+              Print <PrinterOutlined />{" "}
+            </Button>
           </Modal>
         </Content>
       </Layout>
