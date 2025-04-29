@@ -591,10 +591,9 @@ const LandingPage = ({ adminName }) => {
             <Table
               dataSource={tableData}
               columns={getColumns(selectedCategory)}
-              rowKey={(record) => record.id || record.uid} // fallback
+              rowKey={(record) => record.id || record.uid} 
               loading={tableLoading}
-              pagination={{ pageSize: 5 }}
-              scroll={{ x: true }}
+              pagination={false}
               onChange={(pagination, filters, sorter, extra) => {
                 setFilteredTableData(extra.currentDataSource);
               }}

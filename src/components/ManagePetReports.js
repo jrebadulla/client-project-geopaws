@@ -140,7 +140,13 @@ const ManagePetReports = ({ adminName }) => {
 
         {/* Page Content */}
         <div style={{ padding: "20px" }}>
-          <Card bordered style={{ marginBottom: "20px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
+          <Card
+            bordered
+            style={{
+              marginBottom: "20px",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+            }}
+          >
             <Title level={3} style={{ textAlign: "center" }}>
               Manage Pet Reports
             </Title>
@@ -162,7 +168,7 @@ const ManagePetReports = ({ adminName }) => {
               columns={columns}
               rowKey="id"
               loading={loading}
-              pagination={{ pageSize: 5 }}
+              pagination={false}
               bordered
             />
           </Card>

@@ -194,18 +194,11 @@ const AddPets = ({ adminName }) => {
               rules={[
                 {
                   required: true,
-                  message: "Please select or enter a species!",
+                  message: "Please enter the species!",
                 },
               ]}
             >
-              <Select
-                mode="tags"
-                placeholder="Dog, Cat, or Type your own"
-                style={{ width: "100%" }}
-              >
-                <Option value="Dog">Dog</Option>
-                <Option value="Cat">Cat</Option>
-              </Select>
+              <Input placeholder="e.g., Dog, Cat, Bird" />
             </Form.Item>
           </Col>
 
