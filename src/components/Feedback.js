@@ -84,7 +84,7 @@ const ManageFeedback = () => {
       <div style={{ flexGrow: 1, padding: "20px" }}>
         <Card bordered style={{ marginBottom: "20px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>
           <Title level={3} style={{ textAlign: "center", marginBottom: "0" }}>
-            Manage Feedback
+             Feedback
           </Title>
         </Card>
 

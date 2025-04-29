@@ -154,7 +154,7 @@ const HeaderBar = () => {
         {/* Notifications */}
         <Dropdown overlay={notificationMenu} trigger={["click"]}>
           <Badge count={notifications.length} offset={[-3, 10]}>
-            <BellOutlined style={{ fontSize: "18px", cursor: "pointer" }} />
+            <BellOutlined style={{ fontSize: "26px", cursor: "pointer" }} />
           </Badge>
         </Dropdown>
 

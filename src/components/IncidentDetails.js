@@ -1,8 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Layout, Card, Spin, Typography, Descriptions, Divider, Button, Select, Input, message, Image, Row, Col, Timeline } from "antd";
+import {
+  Layout,
+  Card,
+  Spin,
+  Typography,
+  Descriptions,
+  Divider,
+  Button,
+  Select,
+  Input,
+  message,
+  Image,
+  Row,
+  Col,
+  Timeline,
+} from "antd";
 import { ClockCircleOutlined } from "@ant-design/icons";
-import { doc, getDoc, updateDoc, addDoc, collection, query, where, getDocs, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import Sidebar from "./Sidebar";
 import HeaderBar from "./HeaderBar";
@@ -32,7 +57,10 @@ const IncidentDetails = () => {
           setStatus(data.status || "");
         }
 
-        const historyQuery = query(collection(db, "incident_history"), where("incidentId", "==", id));
+        const historyQuery = query(
+          collection(db, "incident_history"),
+          where("incidentId", "==", id)
+        );
         const historySnapshot = await getDocs(historyQuery);
         const historyData = historySnapshot.docs.map((doc) => doc.data());
         setIncidentHistory(historyData);
@@ -92,15 +120,30 @@ const IncidentDetails = () => {
             <Spin
               tip="Loading Incident Details..."
               size="large"
-              style={{ display: "block", textAlign: "center", marginTop: "50px" }}
+              style={{
+                display: "block",
+                textAlign: "center",
+                marginTop: "50px",
+              }}
             />
           ) : (
-            <Card style={{ borderRadius: "8px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
-              <Button type="default" style={{ marginBottom: "20px" }} onClick={() => navigate("/pet-reports")}>
+            <Card
+              style={{
+                borderRadius: "8px",
+                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              }}
+            >
+              <Button
+                type="default"
+                style={{ marginBottom: "20px" }}
+                onClick={() => navigate("/pet-reports")}
+              >
                 &larr; Back to Reports
               </Button>
 
-              <Title level={2} style={{ textAlign: "center" }}>Incident Details</Title>
+              <Title level={2} style={{ textAlign: "center" }}>
+                Incident Details
+              </Title>
 
               {/* Image */}
               {reportDetails?.image && (
@@ -118,26 +161,42 @@ const IncidentDetails = () => {
               <Row gutter={[16, 16]}>
                 <Col xs={24} md={12}>
                   <Descriptions bordered column={1}>
-                    <Descriptions.Item label="Concern">{reportDetails?.pet_name || "N/A"}</Descriptions.Item>
-                    <Descriptions.Item label="Location">{reportDetails?.location_lost || "N/A"}</Descriptions.Item>
+                    <Descriptions.Item label="Concern">
+                      {reportDetails?.pet_name || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Location">
+                      {reportDetails?.location_lost || "N/A"}
+                    </Descriptions.Item>
                   </Descriptions>
                 </Col>
                 <Col xs={24} md={12}>
                   <Descriptions bordered column={1}>
-                    <Descriptions.Item label="Date ">{reportDetails?.date_lost || "N/A"}</Descriptions.Item>
-                    <Descriptions.Item label="Time ">{reportDetails?.time_lost || "N/A"}</Descriptions.Item>
+                    <Descriptions.Item label="Date ">
+                      {reportDetails?.date_lost || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Time ">
+                      {reportDetails?.time_lost || "N/A"}
+                    </Descriptions.Item>
                   </Descriptions>
                 </Col>
                 <Col xs={24} md={12}>
                   <Descriptions bordered column={1}>
-                    <Descriptions.Item label="Additional Info">{reportDetails?.additional_info || "N/A"}</Descriptions.Item>
-                    <Descriptions.Item label="Status">{reportDetails?.status || "N/A"}</Descriptions.Item>
+                    <Descriptions.Item label="Additional Info">
+                      {reportDetails?.additional_info || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Status">
+                      {reportDetails?.status || "N/A"}
+                    </Descriptions.Item>
                   </Descriptions>
                 </Col>
                 <Col xs={24} md={12}>
                   <Descriptions bordered column={1}>
-                    <Descriptions.Item label="Remarks">{reportDetails?.remarks || "N/A"}</Descriptions.Item>
-                    <Descriptions.Item label="Reported By">{reportDetails?.user || "N/A"}</Descriptions.Item>
+                    <Descriptions.Item label="Remarks">
+                      {reportDetails?.remarks || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Reported By">
+                      {reportDetails?.user || "N/A"}
+                    </Descriptions.Item>
                   </Descriptions>
                 </Col>
               </Row>
@@ -145,131 +204,146 @@ const IncidentDetails = () => {
               <Divider />
 
               {/* Update Incident - Only show if status is NOT Closed */}
-                {status !== "Closed" && (
+              {status !== "Closed" && (
                 <>
-                    <Divider />
-                    <Title level={4}>Update Incident</Title>
-                        <Select
-                        style={{ width: "100%", marginBottom: "10px" }}
-                        placeholder="Select Status"
-                        value={status}
-                        onChange={(value) => setStatus(value)}
-                        >
-                            <Option value="In Progress">In Progress</Option>
-                            <Option value="Resolved">Resolved</Option>
-                            <Option value="Closed">Closed</Option>
-                        </Select>
-                    <Input.TextArea
+                  <Divider />
+                  <Title level={4}>Update Incident</Title>
+                  <Select
+                    style={{ width: "100%", marginBottom: "10px" }}
+                    placeholder="Select Status"
+                    value={status}
+                    onChange={(value) => setStatus(value)}
+                  >
+                    <Option value="In Progress">In Progress</Option>
+                    <Option value="Resolved">Resolved</Option>
+                    {/* <Option value="Closed">Closed</Option> */}
+                  </Select>
+                  <Input.TextArea
                     rows={3}
                     placeholder="Add remarks..."
                     value={remarks}
                     onChange={(e) => setRemarks(e.target.value)}
-                    />
-                    <Button
+                  />
+                  <Button
                     type="primary"
                     onClick={async () => {
-                        await handleUpdate();
-                        window.location.reload(); // Reload page after successful update
+                      await handleUpdate();
+                      window.location.reload(); // Reload page after successful update
                     }}
                     style={{ marginTop: "10px" }}
-                    >
+                  >
                     Update Incident
-                    </Button>
+                  </Button>
                 </>
-                )}
+              )}
 
-                <Divider />
-                <Title level={4}>Incident History</Title>
-                {incidentHistory.length > 0 ? (
+              <Divider />
+              <Title level={4}>Incident History</Title>
+              {incidentHistory.length > 0 ? (
                 <Timeline
-                    mode="left"
-                    style={{ marginTop: "20px", paddingLeft: "10px" }}
-                    pending={<Text type="secondary">Loading more updates...</Text>}
+                  mode="left"
+                  style={{ marginTop: "20px", paddingLeft: "10px" }}
+                  pending={
+                    <Text type="secondary">Loading more updates...</Text>
+                  }
                 >
-                    {incidentHistory
+                  {incidentHistory
                     .sort((a, b) => {
-                        // Convert Firestore Timestamps or plain dates to milliseconds
-                        const dateA = a.updatedAt?.seconds
+                      // Convert Firestore Timestamps or plain dates to milliseconds
+                      const dateA = a.updatedAt?.seconds
                         ? a.updatedAt.seconds * 1000
                         : new Date(a.updatedAt).getTime();
-                        const dateB = b.updatedAt?.seconds
+                      const dateB = b.updatedAt?.seconds
                         ? b.updatedAt.seconds * 1000
                         : new Date(b.updatedAt).getTime();
-                        return dateB - dateA; // Sort descending (latest first)
+                      return dateB - dateA; // Sort descending (latest first)
                     })
                     .map((history, index) => (
-                        <Timeline.Item
+                      <Timeline.Item
                         key={index}
                         dot={
-                            <ClockCircleOutlined
+                          <ClockCircleOutlined
                             style={{
-                                fontSize: "18px",
-                                color: history.status === "Resolved" ? "#52c41a" : history.status === "Closed" ? "#ff4d4f" : "#1890ff",
+                              fontSize: "18px",
+                              color:
+                                history.status === "Resolved"
+                                  ? "#52c41a"
+                                  : history.status === "Closed"
+                                  ? "#ff4d4f"
+                                  : "#1890ff",
                             }}
-                            />
+                          />
                         }
-                        color={history.status === "Resolved" ? "green" : history.status === "Closed" ? "red" : "blue"}
-                        >
+                        color={
+                          history.status === "Resolved"
+                            ? "green"
+                            : history.status === "Closed"
+                            ? "red"
+                            : "blue"
+                        }
+                      >
                         <Card
-                            hoverable
-                            style={{
+                          hoverable
+                          style={{
                             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                             borderRadius: "10px",
                             padding: "12px 16px",
                             background: "#ffffff", // Keep the background white
                             borderLeft: `5px solid ${
-                                history.status === "Resolved"
+                              history.status === "Resolved"
                                 ? "#52c41a" // Green for Resolved
                                 : history.status === "Closed"
                                 ? "#ff4d4f" // Red for Closed
                                 : "#1890ff" // Blue for In Progress or others
                             }`,
-                            }}
+                          }}
                         >
-                            <Row>
+                          <Row>
                             <Col span={24}>
-                                <Text strong>Status: </Text>
-                                <Text
+                              <Text strong>Status: </Text>
+                              <Text
                                 style={{
-                                    color:
+                                  color:
                                     history.status === "Resolved"
-                                        ? "#52c41a"
-                                        : history.status === "Closed"
-                                        ? "#ff4d4f"
-                                        : "#1890ff",
+                                      ? "#52c41a"
+                                      : history.status === "Closed"
+                                      ? "#ff4d4f"
+                                      : "#1890ff",
                                 }}
-                                >
+                              >
                                 {history.status}
-                                </Text>
+                              </Text>
                             </Col>
                             <Col span={24} style={{ marginTop: "8px" }}>
-                                <Text strong>Updated By: </Text>
-                                {history.updatedBy}
+                              <Text strong>Updated By: </Text>
+                              {history.updatedBy}
                             </Col>
                             <Col span={24} style={{ marginTop: "8px" }}>
-                                <Text strong>Updated At: </Text>
-                                {history.updatedAt
+                              <Text strong>Updated At: </Text>
+                              {history.updatedAt
                                 ? history.updatedAt.seconds
-                                    ? new Date(history.updatedAt.seconds * 1000).toLocaleString()
-                                    : new Date(history.updatedAt).toLocaleString()
+                                  ? new Date(
+                                      history.updatedAt.seconds * 1000
+                                    ).toLocaleString()
+                                  : new Date(history.updatedAt).toLocaleString()
                                 : "N/A"}
                             </Col>
                             {history.remarks && (
-                                <Col span={24} style={{ marginTop: "8px" }}>
+                              <Col span={24} style={{ marginTop: "8px" }}>
                                 <Text strong>Remarks: </Text>
                                 {history.remarks}
-                                </Col>
+                              </Col>
                             )}
-                            </Row>
+                          </Row>
                         </Card>
-                        </Timeline.Item>
+                      </Timeline.Item>
                     ))}
                 </Timeline>
-                ) : (
+              ) : (
                 <Text type="secondary" style={{ fontSize: "16px" }}>
-                    No history available for this incident.
+                  No history available for this incident.
                 </Text>
-                )}
+              )}
             </Card>
           )}
         </Content>

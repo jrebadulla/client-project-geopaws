@@ -93,6 +93,13 @@ const Sidebar = () => {
 
         {/* Pet Reports */}
         <Menu.Item
+          key="5"
+          icon={<MailOutlined style={{ color: "#1e88e5" }} />}
+          onClick={() => handleNavigate("/requests")}
+        >
+           Adoption Request
+        </Menu.Item>
+        <Menu.Item
           key="4"
           icon={<FormOutlined style={{ color: "#1e88e5" }} />}
           onClick={() => handleNavigate("/pet-reports")}
@@ -101,13 +108,6 @@ const Sidebar = () => {
         </Menu.Item>
 
         {/* Requests */}
-        <Menu.Item
-          key="5"
-          icon={<MailOutlined style={{ color: "#1e88e5" }} />}
-          onClick={() => handleNavigate("/requests")}
-        >
-          Requests
-        </Menu.Item>
 
         {/* Messages */}
         <Menu.Item

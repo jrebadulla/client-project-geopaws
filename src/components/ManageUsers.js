@@ -91,7 +91,7 @@ const ManageUsers = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
-          <Button type="link" onClick={() => handleViewDetails(record)}>
+          <Button type="primary" onClick={() => handleViewDetails(record)}>
             View Details
           </Button>
         </Space>
@@ -108,7 +108,7 @@ const ManageUsers = () => {
       <div style={{ flexGrow: 1, padding: "20px" }}>
         <Card bordered style={{ marginBottom: "20px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
           <Title level={3} style={{ textAlign: "center", margin: 0 }}>
-            Manage Customers
+            Members
           </Title>
         </Card>
 

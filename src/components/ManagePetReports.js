@@ -157,8 +157,8 @@ const ManagePetReports = ({ adminName }) => {
             <TabPane tab="All" key="All" />
             <TabPane tab="In Progress" key="In Progress" />
             <TabPane tab="Resolved" key="Resolved" />
-            <TabPane tab="Closed" key="Closed" />
-            <TabPane tab="Cancelled" key="Cancelled" />
+            {/* <TabPane tab="Closed" key="Closed" />
+            <TabPane tab="Cancelled" key="Cancelled" /> */}
           </Tabs>
 
           {/* Table */}
