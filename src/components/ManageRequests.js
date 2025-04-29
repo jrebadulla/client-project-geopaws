@@ -207,7 +207,7 @@ const ManageRequests = ({ adminName }) => {
               columns={columns}
               rowKey="id"
               loading={loading}
-              pagination={{ pageSize: 5 }}
+              pagination={false}
               bordered
             />
           </Card>

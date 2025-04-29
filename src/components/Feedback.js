@@ -104,13 +104,13 @@ const ManageFeedback = () => {
               {/* Pagination */}
               <Row justify="center" style={{ marginTop: "20px" }}>
                 <Col>
-                  <Pagination
+                  {/* <Pagination
                     current={currentPage}
                     pageSize={pageSize}
                     total={feedbacks.length}
                     onChange={handlePageChange}
                     showSizeChanger={false}
-                  />
+                  /> */}
                 </Col>
               </Row>
             </>

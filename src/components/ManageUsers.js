@@ -121,7 +121,7 @@ const ManageUsers = () => {
               dataSource={users}
               columns={columns}
               rowKey="id"
-              pagination={{ pageSize: 5 }}
+              pagination={false}
               bordered
             />
           )}

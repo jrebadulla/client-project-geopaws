@@ -69,9 +69,7 @@ const ManagePets = ({ adminName }) => {
 
     if (value) {
       const filtered = pets.filter((pet) => {
-        const typeString = Array.isArray(pet.type)
-          ? pet.type.join(", ")
-          : pet.type || "";
+        const typeString = pet.type || ""; // Simply treat type as a string now
         return typeString.toLowerCase().includes(value.toLowerCase().trim());
       });
       setFilteredPets(filtered);
@@ -202,7 +200,7 @@ const ManagePets = ({ adminName }) => {
                 justifyContent: "flex-end",
               }}
             >
-              <Pagination
+              {/* <Pagination
                 current={currentPage}
                 pageSize={pageSize}
                 total={filteredPets.length}
@@ -210,7 +208,7 @@ const ManagePets = ({ adminName }) => {
                   setCurrentPage(page);
                   setPageSize(pageSize);
                 }}
-              />
+              /> */}
             </div>
           </Card>
 
@@ -277,8 +275,7 @@ const ManagePets = ({ adminName }) => {
                   </Descriptions.Item>
 
                   <Descriptions.Item label="Type">
-                    {(selectedPet.type && selectedPet.type.join(", ")) ||
-                      "Unknown"}
+                    {selectedPet.type || "Unknown"}
                   </Descriptions.Item>
 
                   <Descriptions.Item label="Breed">
@@ -341,9 +338,6 @@ const ManagePets = ({ adminName }) => {
 
                   <Descriptions.Item label="Rescue Story" span={2}>
                     {selectedPet.rescue_story || "None"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Status" span={2}>
-                    {selectedPet.status || "None"}
                   </Descriptions.Item>
                 </Descriptions>
               </div>
