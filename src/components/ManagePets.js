@@ -68,12 +68,12 @@ const ManagePets = ({ adminName }) => {
     setSearchType(value);
 
     if (value) {
-      const filtered = pets.filter((pet) =>
-        (pet.type || "")
-          .toLowerCase()
-          .trim()
-          .includes(value.toLowerCase().trim())
-      );
+      const filtered = pets.filter((pet) => {
+        const typeString = Array.isArray(pet.type)
+          ? pet.type.join(", ")
+          : pet.type || "";
+        return typeString.toLowerCase().includes(value.toLowerCase().trim());
+      });
       setFilteredPets(filtered);
     } else {
       setFilteredPets(pets);
@@ -272,61 +272,78 @@ const ManagePets = ({ adminName }) => {
                   size="small"
                   style={{ width: "100%" }}
                 >
-                  {/* Pet Image (Optional) */}
-
-                  {/* Pet Name */}
                   <Descriptions.Item label="Name">
                     {selectedPet.pet_name || "Unknown"}
                   </Descriptions.Item>
 
-                  {/* Type */}
                   <Descriptions.Item label="Type">
-                    {selectedPet.type || "Unknown"}
+                    {(selectedPet.type && selectedPet.type.join(", ")) ||
+                      "Unknown"}
                   </Descriptions.Item>
 
-                  {/* Age */}
+                  <Descriptions.Item label="Breed">
+                    {selectedPet.breed || "Unknown"}
+                  </Descriptions.Item>
+
                   <Descriptions.Item label="Age">
                     {selectedPet.age || "Unknown"}
                   </Descriptions.Item>
 
-                  {/* Color */}
                   <Descriptions.Item label="Color">
                     {selectedPet.color || "Unknown"}
                   </Descriptions.Item>
 
-                  {/* Sex */}
                   <Descriptions.Item label="Sex">
                     {selectedPet.sex || "Unknown"}
                   </Descriptions.Item>
 
-                  {/* Size */}
                   <Descriptions.Item label="Size">
                     {selectedPet.size || "Unknown"}
                   </Descriptions.Item>
 
-                  {/* Status */}
-                  <Descriptions.Item label="Status">
-                    {selectedPet.status || "Unknown"}
-                  </Descriptions.Item>
-
-                  {/* Arrival Date */}
                   <Descriptions.Item label="Arrival Date">
                     {selectedPet.arrivaldate || "Unknown"}
                   </Descriptions.Item>
 
-                  {/* Health Issues */}
-                  <Descriptions.Item label="Health Issues">
-                    {selectedPet.health_issues || "None"}
+                  <Descriptions.Item label="Dewormed">
+                    {selectedPet.dewormed || "Unknown"}
                   </Descriptions.Item>
 
-                  {/* Rescue Location */}
-                  <Descriptions.Item label="Rescue Location">
-                    {selectedPet.rescue_location || "Unknown"}
+                  <Descriptions.Item label="Spayed/Neutered">
+                    {selectedPet.spayed_neutered || "Unknown"}
                   </Descriptions.Item>
 
-                  {/* Additional Details */}
-                  <Descriptions.Item label="Additional Details" span={2}>
-                    {selectedPet.additional_details || "None"}
+                  <Descriptions.Item label="Microchipped">
+                    {selectedPet.microchipped || "Unknown"}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Vaccinated">
+                    {selectedPet.vaccinated || "Unknown"}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Training Level">
+                    {selectedPet.training_level || "Unknown"}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Medical Conditions">
+                    {selectedPet.medical_conditions || "None"}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Temperament">
+                    {selectedPet.temperament || "Unknown"}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Good With">
+                    {(selectedPet.good_with &&
+                      selectedPet.good_with.join(", ")) ||
+                      "Unknown"}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Rescue Story" span={2}>
+                    {selectedPet.rescue_story || "None"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Status" span={2}>
+                    {selectedPet.status || "None"}
                   </Descriptions.Item>
                 </Descriptions>
               </div>

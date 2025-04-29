@@ -260,27 +260,48 @@ const LandingPage = ({ adminName }) => {
       // Adoption pets
       return [
         { title: "Pet Name", dataIndex: "pet_name", key: "pet_name" },
-        { title: "Type", dataIndex: "type", key: "type" },
+        {
+          title: "Type",
+          dataIndex: "type",
+          key: "type",
+          render: (type) => (Array.isArray(type) ? type.join(", ") : type),
+        },
         { title: "Sex", dataIndex: "sex", key: "sex" },
         { title: "Age", dataIndex: "age", key: "age" },
         { title: "Color", dataIndex: "color", key: "color" },
         { title: "Size", dataIndex: "size", key: "size" },
         {
-          title: "Health Status",
-          dataIndex: "health_issues",
-          key: "health_issues",
+          title: "Breed",
+          dataIndex: "breed",
+          key: "breed",
         },
         {
-          title: "Additional Details",
-          dataIndex: "additional_details",
-          key: "additional_details",
+          title: "Medical Conditions",
+          dataIndex: "medical_conditions",
+          key: "medical_conditions",
         },
         {
-          title: "Rescue Location",
-          dataIndex: "rescue_location",
-          key: "rescue_location",
+          title: "Temperament",
+          dataIndex: "temperament",
+          key: "temperament",
         },
-        { title: "Arrival Date", dataIndex: "arrivaldate", key: "arrivaldate" },
+        {
+          title: "Training Level",
+          dataIndex: "training_level",
+          key: "training_level",
+        },
+        {
+          title: "Good With",
+          dataIndex: "good_with",
+          key: "good_with",
+          render: (good_with) =>
+            Array.isArray(good_with) ? good_with.join(", ") : good_with,
+        },
+        {
+          title: "Arrival Date",
+          dataIndex: "arrivaldate",
+          key: "arrivaldate",
+        },
         {
           title: "Status",
           dataIndex: "status",
@@ -291,7 +312,6 @@ const LandingPage = ({ adminName }) => {
           ],
           onFilter: (value, record) => record.status === value,
         },
-
         {
           title: "Image",
           dataIndex: "images",
@@ -579,7 +599,12 @@ const LandingPage = ({ adminName }) => {
                 setFilteredTableData(extra.currentDataSource);
               }}
             />
-            <Button className="print-button" onClick={handlePrint}>
+            <Button
+              type="primary"
+              size="large"
+              className="print-button"
+              onClick={handlePrint}
+            >
               Print <PrinterOutlined />
             </Button>
           </Modal>

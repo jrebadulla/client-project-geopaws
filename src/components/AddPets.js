@@ -65,6 +65,7 @@ const AddPets = ({ adminName }) => {
         ...cleanedValues,
         images: imageUrl,
         arrivaldate: values.arrivaldate.format("YYYY-MM-DD"),
+        status: "Available",
       };
 
       Object.keys(petData).forEach((key) => {
