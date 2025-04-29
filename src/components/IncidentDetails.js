@@ -118,14 +118,14 @@ const IncidentDetails = () => {
               <Row gutter={[16, 16]}>
                 <Col xs={24} md={12}>
                   <Descriptions bordered column={1}>
-                    <Descriptions.Item label="Pet Name">{reportDetails?.pet_name || "N/A"}</Descriptions.Item>
-                    <Descriptions.Item label="Location Lost">{reportDetails?.location_lost || "N/A"}</Descriptions.Item>
+                    <Descriptions.Item label="Concern">{reportDetails?.pet_name || "N/A"}</Descriptions.Item>
+                    <Descriptions.Item label="Location">{reportDetails?.location_lost || "N/A"}</Descriptions.Item>
                   </Descriptions>
                 </Col>
                 <Col xs={24} md={12}>
                   <Descriptions bordered column={1}>
-                    <Descriptions.Item label="Date Lost">{reportDetails?.date_lost || "N/A"}</Descriptions.Item>
-                    <Descriptions.Item label="Time Lost">{reportDetails?.time_lost || "N/A"}</Descriptions.Item>
+                    <Descriptions.Item label="Date ">{reportDetails?.date_lost || "N/A"}</Descriptions.Item>
+                    <Descriptions.Item label="Time ">{reportDetails?.time_lost || "N/A"}</Descriptions.Item>
                   </Descriptions>
                 </Col>
                 <Col xs={24} md={12}>

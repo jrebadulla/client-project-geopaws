@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  deleteDoc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import {
   Table,
@@ -12,7 +19,8 @@ import {
   Space,
   Descriptions,
   Image,
-  Tabs, Input,
+  Tabs,
+  Input,
 } from "antd";
 import Sidebar from "./Sidebar";
 import HeaderBar from "./HeaderBar"; // Import the reusable HeaderBar component
@@ -30,6 +38,7 @@ const ManageRequests = ({ adminName }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("All");
   const [declineReason, setDeclineReason] = useState("");
+  const [declineModalVisible, setDeclineModalVisible] = useState(false);
 
   // Fetch requests from Firestore
   useEffect(() => {
@@ -42,7 +51,10 @@ const ManageRequests = ({ adminName }) => {
           ...doc.data(),
         }));
         setRequests(requestsList);
-        setFilteredRequests(requestsList);
+        setFilteredRequests(
+          requestsList.filter((req) => req.status === "Pending")
+        ); // ✅
+        setActiveTab("Pending");
       } catch (error) {
         console.error("Error fetching requests:", error);
         message.error("Failed to load requests.");
@@ -63,22 +75,18 @@ const ManageRequests = ({ adminName }) => {
     } else {
       setFilteredRequests(requests.filter((req) => req.status === key));
     }
-  };  
+  };
 
-  // Fetch additional details and open modal
   const handleView = async (request) => {
     try {
       setSelectedRequest(request);
+      setIsModalVisible(true);
 
-      // Fetch pet details
       const petDoc = await getDoc(doc(db, "pet", request.petId));
       setPetDetails(petDoc.exists() ? petDoc.data() : null);
 
-      // Fetch user details
       const userDoc = await getDoc(doc(db, "users", request.uid));
       setUserDetails(userDoc.exists() ? userDoc.data() : null);
-
-      setIsModalVisible(true);
     } catch (error) {
       console.error("Error fetching details:", error);
       message.error("Failed to load additional details.");
@@ -110,7 +118,6 @@ const ManageRequests = ({ adminName }) => {
     }
   };
 
-
   // Update request status
   const updateStatus = async (status) => {
     try {
@@ -133,48 +140,7 @@ const ManageRequests = ({ adminName }) => {
 
   const handleApprove = () => updateStatus("Approved");
   const handleDecline = () => {
-    Modal.confirm({
-      title: "Decline Request",
-      content: (
-        <div>
-          <p>Please provide a reason for declining this request:</p>
-          <Input.TextArea
-            rows={4}
-            placeholder="Enter decline reason"
-            onChange={(e) => setDeclineReason(e.target.value)}
-          />
-        </div>
-      ),
-      onOk: async () => {
-        if (!declineReason.trim()) {
-          message.error("Decline reason is required!");
-          return;
-        }
-        try {
-          const requestRef = doc(db, "request", selectedRequest.id);
-          await updateDoc(requestRef, { status: "Declined", declineReason });
-          setRequests((prevRequests) =>
-            prevRequests.map((req) =>
-              req.id === selectedRequest.id
-                ? { ...req, status: "Declined", declineReason }
-                : req
-            )
-          );
-          message.success("Request declined successfully!");
-          handleClose();
-        } catch (error) {
-          console.error("Error declining request:", error);
-          message.error("Failed to update status.");
-        } finally {
-          setDeclineReason("");
-        }
-      },
-      onCancel: () => {
-        setDeclineReason("");
-      },
-      okText: "Submit",
-      cancelText: "Cancel",
-    });
+    setDeclineModalVisible(true);
   };
 
   // Table columns
@@ -205,14 +171,14 @@ const ManageRequests = ({ adminName }) => {
           <Button type="link" onClick={() => handleView(record)}>
             View
           </Button>
-          {record.status !== "Archived" && (
+          {/* {record.status !== "Archived" && (
             <Button type="link" danger onClick={() => handleArchive(record.id)}>
               Archive
             </Button>
-          )}
+          )} */}
         </Space>
       ),
-    },    
+    },
   ];
 
   return (
@@ -223,16 +189,15 @@ const ManageRequests = ({ adminName }) => {
         <div style={{ padding: "20px" }}>
           <Card bordered style={{ marginBottom: "20px" }}>
             <Title level={3} style={{ textAlign: "center" }}>
-              Manage Requests
+              Pet Adoption Request
             </Title>
           </Card>
 
           {/* Tabs */}
-          <Tabs defaultActiveKey="All" onChange={handleTabChange} centered>
-            <TabPane tab="All" key="All" />
+          <Tabs activeKey={activeTab} onChange={handleTabChange} centered>
+            <TabPane tab="Pending" key="Pending" />
             <TabPane tab="Approved" key="Approved" />
             <TabPane tab="Declined" key="Declined" />
-            <TabPane tab="Archived" key="Archived" />
           </Tabs>
 
           {/* Table */}
@@ -252,6 +217,10 @@ const ManageRequests = ({ adminName }) => {
             title={null}
             visible={isModalVisible}
             onCancel={handleClose}
+            bodyStyle={{
+              height: "450px", // Set your fixed height
+              overflowY: "auto", // Enable vertical scrolling
+            }}
             footer={[
               <Button key="close" onClick={handleClose}>
                 Close
@@ -261,7 +230,7 @@ const ManageRequests = ({ adminName }) => {
                   <Button key="approve" type="primary" onClick={handleApprove}>
                     Approve
                   </Button>
-                  <Button key="decline" type="danger" onClick={handleDecline}>
+                  <Button danger type="primary" onClick={handleDecline}>
                     Decline
                   </Button>
                 </>
@@ -302,14 +271,15 @@ const ManageRequests = ({ adminName }) => {
                       </Text>
                     }
                   />
-                  {selectedRequest.status === "Declined" && selectedRequest.declineReason && (
-                    <Text type="danger" style={{ fontSize: "14px" }}>
-                      Reason: {selectedRequest.declineReason}
-                    </Text>
-                  )}
+                  {selectedRequest.status === "Declined" &&
+                    selectedRequest.declineReason && (
+                      <Text type="danger" style={{ fontSize: "14px" }}>
+                        Reason: {selectedRequest.declineReason}
+                      </Text>
+                    )}
                 </Space>
 
-                <Descriptions bordered column={1} style={{ marginTop: "20px" }}>
+                <Descriptions bordered column={1} style={{ marginTop: "10px" }}>
                   <Descriptions.Item label="Email">
                     {userDetails?.email || "N/A"}
                   </Descriptions.Item>
@@ -335,6 +305,52 @@ const ManageRequests = ({ adminName }) => {
                 </Descriptions>
               </Card>
             )}
+          </Modal>
+          <Modal
+            title="Decline Request"
+            visible={declineModalVisible}
+            onOk={async () => {
+              if (!declineReason.trim()) {
+                message.error("Decline reason is required!");
+                return;
+              }
+              try {
+                const requestRef = doc(db, "request", selectedRequest.id);
+                await updateDoc(requestRef, {
+                  status: "Declined",
+                  declineReason,
+                });
+                setRequests((prevRequests) =>
+                  prevRequests.map((req) =>
+                    req.id === selectedRequest.id
+                      ? { ...req, status: "Declined", declineReason }
+                      : req
+                  )
+                );
+                message.success("Request declined successfully!");
+                handleClose();
+              } catch (error) {
+                console.error("Error declining request:", error);
+                message.error("Failed to update status.");
+              } finally {
+                setDeclineModalVisible(false);
+                setDeclineReason("");
+              }
+            }}
+            onCancel={() => {
+              setDeclineModalVisible(false);
+              setDeclineReason("");
+            }}
+            okText="Submit"
+            cancelText="Cancel"
+            centered
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="Enter decline reason"
+              value={declineReason}
+              onChange={(e) => setDeclineReason(e.target.value)}
+            />
           </Modal>
         </div>
       </div>
