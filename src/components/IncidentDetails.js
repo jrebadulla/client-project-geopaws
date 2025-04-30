@@ -142,7 +142,7 @@ const IncidentDetails = () => {
               </Button>
 
               <Title level={2} style={{ textAlign: "center" }}>
-                Incident Details
+                Incident Report
               </Title>
 
               {/* Image */}

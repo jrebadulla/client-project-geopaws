@@ -15,3 +15,12 @@
 .ant-modal-body::-webkit-scrollbar-thumb:hover {
   background-color: rgba(0, 0, 0, 0.4);
 }
+
+.ant-descriptions-bordered .ant-descriptions-item-label {
+  background-color: #e0e9f7 !important; /* Your desired color */
+  font-weight: bold;
+}
+
+.custom-descriptions .ant-descriptions-item-label {
+  background-color: #e6f7ff;
+}

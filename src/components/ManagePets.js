@@ -19,7 +19,7 @@ import {
   Space,
 } from "antd";
 import Sidebar from "./Sidebar";
-import HeaderBar from "./HeaderBar"; // Import the reusable header component
+import HeaderBar from "./HeaderBar"; 
 import { PlusOneOutlined } from "@mui/icons-material";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import AddPetsForm from "./AddPets";
@@ -35,15 +35,12 @@ const ManagePets = ({ adminName }) => {
   const [selectedPet, setSelectedPet] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-
-  // Filter states
+  const [editingPet, setEditingPet] = useState(null);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [searchType, setSearchType] = useState("");
-
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(100);
 
-  // Fetch pets from Firestore
   const fetchPets = async () => {
     try {
       const petsCollection = collection(db, "pet");
@@ -69,7 +66,7 @@ const ManagePets = ({ adminName }) => {
 
     if (value) {
       const filtered = pets.filter((pet) => {
-        const typeString = pet.type || ""; // Simply treat type as a string now
+        const typeString = pet.type || ""; 
         return typeString.toLowerCase().includes(value.toLowerCase().trim());
       });
       setFilteredPets(filtered);
@@ -93,6 +90,9 @@ const ManagePets = ({ adminName }) => {
           <Button type="primary" onClick={() => showModal(record)}>
             View More
           </Button>
+          <Button type="primary" onClick={() => handleEdit(record)}>
+            Edit
+          </Button>
           <Button
             danger
             type="primary"
@@ -108,6 +108,11 @@ const ManagePets = ({ adminName }) => {
   const showModal = (pet) => {
     setSelectedPet(pet);
     setIsModalVisible(true);
+  };
+
+  const handleEdit = (pet) => {
+    setEditingPet(pet);
+    setIsEditModalVisible(true);
   };
 
   const handleCloseModal = () => {
@@ -185,14 +190,13 @@ const ManagePets = ({ adminName }) => {
           {/* Table */}
           <Card>
             <Table
-              dataSource={filteredPets.slice(
-                (currentPage - 1) * pageSize,
-                currentPage * pageSize
-              )}
+              dataSource={filteredPets}
               columns={columns}
               rowKey="id"
               pagination={false}
+              scroll={{ x: "max-content" }}
             />
+
             <div
               style={{
                 marginTop: "20px",
@@ -357,7 +361,34 @@ const ManagePets = ({ adminName }) => {
             <AddPetsForm
               onFinishSuccess={() => {
                 fetchPets(); // Refresh pets list
-                setIsAddModalVisible(false); // Close modal
+                setIsAddModalVisible(false); 
+              }}
+            />
+          </Modal>
+          <Modal
+            title={`✏️ Edit Pet Information: ${
+              editingPet?.pet_name || "Unknown"
+            }`}
+            visible={isEditModalVisible}
+            onCancel={() => {
+              setIsEditModalVisible(false);
+              setEditingPet(null);
+            }}
+            footer={null}
+            centered
+            width={600}
+            bodyStyle={{
+              height: "500px",
+              overflowY: "auto",
+            }}
+          >
+            <AddPetsForm
+              pet={editingPet}
+              isEdit={true}
+              onFinishSuccess={() => {
+                fetchPets(); 
+                setIsEditModalVisible(false);
+                setEditingPet(null); 
               }}
             />
           </Modal>
