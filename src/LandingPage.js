@@ -406,14 +406,11 @@ const LandingPage = ({ adminName }) => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      {/* Sidebar */}
       <Sidebar />
 
       <Layout>
-        {/* Header */}
         <HeaderBar userName={adminName || "Admin"} />
 
-        {/* Main Content */}
         <Content
           style={{
             margin: "20px",
@@ -434,7 +431,6 @@ const LandingPage = ({ adminName }) => {
             />
           ) : (
             <>
-              {/* Summary Cards */}
               <Row
                 gutter={[16, 16]}
                 justify="center"
@@ -495,24 +491,7 @@ const LandingPage = ({ adminName }) => {
                     <Text>Pet Reports</Text>
                   </Card>
                 </Col>
-                {/* <Col xs={24} sm={12} md={8}>
-                  <Card
-                    hoverable
-                    bordered
-                    style={{ textAlign: "center" }}
-                    onClick={() => handleCardClick("resolvedReports")}
-                  >
-                    <FileOutlined
-                      style={{
-                        fontSize: "40px",
-                        color: "#FF8042",
-                        marginBottom: "10px",
-                      }}
-                    />
-                    <Title level={4}>{dataSummary.reportsResolved}</Title>
-                    <Text>Stray Animal Reports</Text>
-                  </Card>
-                </Col> */}
+
                 <Col xs={24} sm={12} md={8}>
                   <Card
                     hoverable
@@ -533,7 +512,6 @@ const LandingPage = ({ adminName }) => {
                 </Col>
               </Row>
 
-              {/* Graph Section */}
               <Row gutter={[16, 16]} justify="center">
                 <Col xs={24} md={12}>
                   <Card title="Data Summary (Bar Chart)" bordered>
