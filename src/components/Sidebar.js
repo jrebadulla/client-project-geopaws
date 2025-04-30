@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { Layout, Menu, Typography } from "antd";
 import {
   HomeOutlined,
-  AppstoreOutlined,
-  PlusCircleOutlined,
   SettingOutlined,
   FormOutlined,
   MailOutlined,
@@ -11,127 +9,120 @@ import {
   UserOutlined,
   NotificationOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import "./SideBar.css";
 
 const { Sider } = Layout;
-const { SubMenu } = Menu;
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false); // For toggling the sidebar collapse
+  const location = useLocation();
 
-  const handleNavigate = (path) => {
+  const pathToKey = {
+    "/": "1",
+    "/manage-pets": "3",
+    "/requests": "5",
+    "/pet-reports": "4",
+    "/messages": "6",
+    "/feedback": "7",
+    "/users": "8",
+  };
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [selectedKey, setSelectedKey] = useState(pathToKey[location.pathname]);
+
+  const handleNavigate = (path, key) => {
     navigate(path);
+    setSelectedKey(key);
   };
 
   return (
     <Sider
-      collapsible
-      collapsed={collapsed}
-      onCollapse={(value) => setCollapsed(value)}
+      // collapsible
+      // collapsed={collapsed}
+      // onCollapse={(value) => setCollapsed(value)}
       breakpoint="lg"
       style={{
-        backgroundColor: "#e3f2fd", // Light blue background
+        backgroundColor: "#e3f2fd",
         minHeight: "100vh",
       }}
     >
-      {/* Sidebar Header */}
       <div
         style={{
           padding: "20px",
           textAlign: "center",
-          color: "#1976d2", // Light Blue Text
+          color: "#1976d2",
           fontWeight: "bold",
           fontSize: collapsed ? "16px" : "20px",
         }}
       >
         <Typography.Title level={4} style={{ margin: 0, color: "#1976d2" }}>
-          GeoPaws
+          GEOPAWS
         </Typography.Title>
       </div>
 
-      {/* Sidebar Menu */}
       <Menu
         mode="inline"
         theme="light"
-        defaultSelectedKeys={["1"]}
+        selectedKeys={[selectedKey]}
+        className="custom-sidebar"
         style={{
-          backgroundColor: "#e3f2fd", // Light Blue Background
-          color: "#1976d2", // Light Blue Text
+          backgroundColor: "#e3f2fd",
+          color: "#1976d2",
         }}
       >
-        {/* Home */}
         <Menu.Item
           key="1"
-          icon={<HomeOutlined style={{ color: "#1e88e5" }} />}
-          onClick={() => handleNavigate("/")}
+          icon={<HomeOutlined />}
+          onClick={() => handleNavigate("/", "1")}
         >
           Home
         </Menu.Item>
 
-        {/* Pets (Submenu)
-        <SubMenu
-          key="sub1"
-          icon={<AppstoreOutlined style={{ color: "#1e88e5" }} />}
-          title="Pets"
-        >
-          <Menu.Item
-            key="2"
-            icon={<PlusCircleOutlined style={{ color: "#1e88e5" }} />}
-            onClick={() => handleNavigate("/add-pets")}
-          >
-            Add Pets
-          </Menu.Item> */}
         <Menu.Item
           key="3"
-          icon={<SettingOutlined style={{ color: "#1e88e5" }} />}
-          onClick={() => handleNavigate("/manage-pets")}
+          icon={<SettingOutlined />}
+          onClick={() => handleNavigate("/manage-pets", "3")}
         >
           Manage Pets
         </Menu.Item>
-        {/* </SubMenu> */}
 
-        {/* Pet Reports */}
         <Menu.Item
           key="5"
-          icon={<MailOutlined style={{ color: "#1e88e5" }} />}
-          onClick={() => handleNavigate("/requests")}
+          icon={<MailOutlined />}
+          onClick={() => handleNavigate("/requests", "5")}
         >
-           Adoption Request
+          Adoption Request
         </Menu.Item>
+
         <Menu.Item
           key="4"
-          icon={<FormOutlined style={{ color: "#1e88e5" }} />}
-          onClick={() => handleNavigate("/pet-reports")}
+          icon={<FormOutlined />}
+          onClick={() => handleNavigate("/pet-reports", "4")}
         >
           Pet Reports
         </Menu.Item>
 
-        {/* Requests */}
-
-        {/* Messages */}
         <Menu.Item
           key="6"
-          icon={<MessageOutlined style={{ color: "#1e88e5" }} />}
-          onClick={() => handleNavigate("/messages")}
+          icon={<MessageOutlined />}
+          onClick={() => handleNavigate("/messages", "6")}
         >
           Messages
         </Menu.Item>
 
-        {/* Feedback */}
         <Menu.Item
           key="7"
-          icon={<NotificationOutlined style={{ color: "#1e88e5" }} />}
-          onClick={() => handleNavigate("/feedback")}
+          icon={<NotificationOutlined />}
+          onClick={() => handleNavigate("/feedback", "7")}
         >
           Feedback
         </Menu.Item>
 
-        {/* Users */}
         <Menu.Item
           key="8"
-          icon={<UserOutlined style={{ color: "#1e88e5" }} />}
-          onClick={() => handleNavigate("/users")}
+          icon={<UserOutlined />}
+          onClick={() => handleNavigate("/users", "8")}
         >
           Users
         </Menu.Item>
