@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -16,17 +16,31 @@ import {
 } from "antd";
 import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
 import { db, storage } from "../firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const AddPets = ({ adminName }) => {
+const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
   const [form] = Form.useForm();
   const [uploading, setUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const CheckboxGroup = Checkbox.Group;
+
+  useEffect(() => {
+    if (isEdit && pet) {
+      form.resetFields(); // reset *before* setting new values
+      form.setFieldsValue({
+        ...pet,
+        arrivaldate: pet.arrivaldate ? dayjs(pet.arrivaldate) : null,
+      });
+
+      // Always update the preview image, even if it's null
+      setImagePreview(pet.images || null);
+    }
+  }, [isEdit, pet]);
 
   const handleImageChange = (fileList) => {
     if (fileList && fileList[0]) {
@@ -41,7 +55,7 @@ const AddPets = ({ adminName }) => {
 
   const onFinish = async (values) => {
     setUploading(true);
-    let imageUrl = "";
+    let imageUrl = pet?.images || ""; // fallback to existing image if not changed
 
     try {
       if (values.imageFile && values.imageFile[0]) {
@@ -65,7 +79,7 @@ const AddPets = ({ adminName }) => {
         ...cleanedValues,
         images: imageUrl,
         arrivaldate: values.arrivaldate.format("YYYY-MM-DD"),
-        status: "Available",
+        status: pet?.status || "Available",
       };
 
       Object.keys(petData).forEach((key) => {
@@ -74,14 +88,20 @@ const AddPets = ({ adminName }) => {
         }
       });
 
-      await addDoc(collection(db, "pet"), petData);
+      if (isEdit && pet?.id) {
+        await updateDoc(doc(db, "pet", pet.id), petData);
+        message.success("🐾 Pet updated successfully!");
+      } else {
+        await addDoc(collection(db, "pet"), petData);
+        message.success("🐾 Pet added successfully!");
+      }
 
-      message.success("🐾 Pet added successfully!");
       form.resetFields();
       setImagePreview(null);
+      if (onFinishSuccess) onFinishSuccess();
     } catch (error) {
-      console.error("Error adding pet:", error);
-      message.error("Failed to add pet. Please try again.");
+      console.error("Error saving pet:", error);
+      message.error("Failed to save pet. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -138,9 +158,11 @@ const AddPets = ({ adminName }) => {
               label="Pet Image"
               valuePropName="fileList"
               getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-              rules={[
-                { required: true, message: "Please upload a pet image!" },
-              ]}
+              rules={
+                !isEdit
+                  ? [{ required: true, message: "Please upload a pet image!" }]
+                  : []
+              }
             >
               <Upload
                 beforeUpload={() => false}
@@ -148,6 +170,22 @@ const AddPets = ({ adminName }) => {
                 accept="image/*"
                 listType="picture-card"
                 onChange={({ fileList }) => handleImageChange(fileList)}
+                defaultFileList={
+                  isEdit && pet?.images
+                    ? [
+                        {
+                          uid: "-1",
+                          name: "Current Image",
+                          status: "done",
+                          url: pet.images,
+                        },
+                      ]
+                    : []
+                }
+                showUploadList={{
+                  showPreviewIcon: true,
+                  showRemoveIcon: true,
+                }}
               >
                 <UploadOutlined style={{ fontSize: 24 }} />
                 <div style={{ marginTop: 8 }}>Upload</div>
@@ -399,7 +437,7 @@ const AddPets = ({ adminName }) => {
                 loading={uploading}
                 style={{ width: "100%", borderRadius: "8px" }}
               >
-                {uploading ? "Uploading..." : "Add Pet"}
+                {uploading ? "Uploading..." : isEdit ? "Update Pet" : "Add Pet"}
               </Button>
             </Form.Item>
           </Col>
