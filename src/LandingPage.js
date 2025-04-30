@@ -26,6 +26,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  LabelList,
 } from "recharts";
 import Sidebar from "./components/Sidebar";
 import HeaderBar from "./components/HeaderBar";
@@ -206,7 +207,7 @@ const LandingPage = ({ adminName }) => {
           title: "Concern",
           dataIndex: "pet_name",
           key: "pet_name",
-          filters: concernFilters, // 🔥 use dynamic filters
+          filters: concernFilters,
           onFilter: (value, record) => record.pet_name === value,
         },
 
@@ -257,7 +258,6 @@ const LandingPage = ({ adminName }) => {
         },
       ];
     } else if (category === "pendingReports") {
-      // Adoption pets
       return [
         { title: "Pet Name", dataIndex: "pet_name", key: "pet_name" },
         {
@@ -352,13 +352,11 @@ const LandingPage = ({ adminName }) => {
     }
   };
 
-  // Fetch Data from Firestore
   useEffect(() => {
     const fetchData = async () => {
       try {
         const usersSnapshot = await getDocs(collection(db, "users"));
 
-        // Reports with status filters
         const availablePetsSnapshot = await getDocs(
           query(collection(db, "pet"))
         );
@@ -369,7 +367,6 @@ const LandingPage = ({ adminName }) => {
           query(collection(db, "reports"), where("status", "==", "Resolved"))
         );
 
-        // Requests with status filters
         const requestsPendingSnapshot = await getDocs(
           query(collection(db, "request"))
         );
@@ -383,11 +380,17 @@ const LandingPage = ({ adminName }) => {
         });
 
         setGraphData([
-          { name: "Users", count: usersSnapshot.size },
-          { name: "Adoption", count: availablePetsSnapshot.size },
-          { name: "Closed Reports", count: reportsClosedSnapshot.size },
-          { name: "Resolved Reports", count: reportsResolvedSnapshot.size },
-          { name: "Pending Requests", count: requestsPendingSnapshot.size },
+          { name: "Users", count: usersSnapshot.size || 0 },
+          { name: "Adoption", count: availablePetsSnapshot.size || 0 },
+          { name: "Closed Reports", count: reportsClosedSnapshot.size || 0 },
+          {
+            name: "Resolved Reports",
+            count: reportsResolvedSnapshot.size || 0,
+          },
+          {
+            name: "Pending Requests",
+            count: requestsPendingSnapshot.size || 0,
+          },
         ]);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -399,7 +402,7 @@ const LandingPage = ({ adminName }) => {
     fetchData();
   }, []);
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A569BD"]; // Colors for Pie Chart
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A569BD"];
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -537,12 +540,24 @@ const LandingPage = ({ adminName }) => {
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart
                         data={graphData}
-                        margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+                        margin={{ top: 5, right: 20, bottom: 50, left: 0 }}
                       >
-                        <XAxis dataKey="name" />
+                        <XAxis
+                          dataKey="name"
+                          angle={-35}
+                          textAnchor="end"
+                          interval={0}
+                        />
+
                         <YAxis />
                         <Tooltip />
-                        <Bar dataKey="count" fill="#1890ff" />
+                        <Bar dataKey="count" fill="#1890ff">
+                          <LabelList
+                            dataKey="count"
+                            position="top"
+                            style={{ fill: "#000", fontWeight: "bold" }}
+                          />
+                        </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   </Card>
@@ -559,7 +574,9 @@ const LandingPage = ({ adminName }) => {
                           cx="50%"
                           cy="50%"
                           outerRadius={100}
-                          label
+                          label={({ name, percent }) =>
+                            `${name} (${(percent * 100).toFixed(0)}%)`
+                          }
                         >
                           {graphData.map((_, index) => (
                             <Cell
@@ -591,7 +608,7 @@ const LandingPage = ({ adminName }) => {
             <Table
               dataSource={tableData}
               columns={getColumns(selectedCategory)}
-              rowKey={(record) => record.id || record.uid} 
+              rowKey={(record) => record.id || record.uid}
               loading={tableLoading}
               pagination={false}
               onChange={(pagination, filters, sorter, extra) => {
