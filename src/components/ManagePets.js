@@ -341,7 +341,6 @@ const ManagePets = ({ adminName }) => {
                 <Descriptions
                   bordered
                   column={1}
-                  // size="small"
                   style={{ marginBottom: 24, textAlign: "start" }}
                 >
                   <Descriptions.Item label="Name">
@@ -353,7 +352,7 @@ const ManagePets = ({ adminName }) => {
                   <Descriptions.Item label="Breed">
                     {selectedPet.breed || "Unknown"}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Sex">
+                  <Descriptions.Item label="Gender">
                     {selectedPet.sex || "Unknown"}
                   </Descriptions.Item>
                   <Descriptions.Item label="Age">
@@ -365,18 +364,11 @@ const ManagePets = ({ adminName }) => {
                   <Descriptions.Item label="Color">
                     {selectedPet.color || "Unknown"}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Appearance">
-                    {selectedPet.appearance || "Unknown"}
-                  </Descriptions.Item>
                   <Descriptions.Item label="Arrival Date">
                     {selectedPet.arrivaldate || "Unknown"}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Status">
-                    {selectedPet.status || "Unknown"}
-                  </Descriptions.Item>
                 </Descriptions>
 
-                {/* Section: Health */}
                 <Title
                   level={4}
                   style={{ marginBottom: 15, textAlign: "start" }}
@@ -395,9 +387,12 @@ const ManagePets = ({ adminName }) => {
                   <Descriptions.Item label="Skin Condition">
                     {selectedPet.skin_condition || "Unknown"}
                   </Descriptions.Item>
+                  <Descriptions.Item label="Appearance">
+                    {selectedPet.appearance || "Unknown"}
+                  </Descriptions.Item>
                 </Descriptions>
 
-                {/* Section: Temperament */}
+          
                 <Title
                   level={4}
                   style={{ marginBottom: 15, textAlign: "start" }}
@@ -415,7 +410,6 @@ const ManagePets = ({ adminName }) => {
                   </Descriptions.Item>
                 </Descriptions>
 
-                {/* Section: Background */}
                 <Title
                   level={4}
                   style={{ marginBottom: 15, textAlign: "start" }}

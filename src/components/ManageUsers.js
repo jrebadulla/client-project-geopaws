@@ -101,21 +101,27 @@ const ManageUsers = () => {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
       <div style={{ flexGrow: 1, padding: "20px" }}>
-        <Card bordered style={{ marginBottom: "20px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
+        <Card
+          bordered
+          style={{
+            marginBottom: "20px",
+            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+          }}
+        >
           <Title level={3} style={{ textAlign: "center", margin: 0 }}>
             Members
           </Title>
         </Card>
 
-        {/* Table */}
         <Card>
           {loading ? (
-            <Spin size="large" style={{ display: "block", margin: "50px auto" }} />
+            <Spin
+              size="large"
+              style={{ display: "block", margin: "50px auto" }}
+            />
           ) : (
             <Table
               dataSource={users}
@@ -127,7 +133,6 @@ const ManageUsers = () => {
           )}
         </Card>
 
-        {/* Modal for Profile Details */}
         <Modal
           visible={isModalVisible}
           onCancel={handleCloseModal}
@@ -141,21 +146,30 @@ const ManageUsers = () => {
         >
           {selectedUser && (
             <div style={{ textAlign: "center" }}>
-              {/* Profile Avatar */}
               <Avatar
                 size={100}
                 src={selectedUser.images}
                 icon={!selectedUser.images ? <UserOutlined /> : null}
-                style={{ marginBottom: "20px", boxShadow: "0 4px 6px rgba(0,0,0,0.2)" }}
+                style={{
+                  marginBottom: "20px",
+                  boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
+                }}
               />
 
-              {/* User Full Name */}
               <Title level={4} style={{ marginBottom: "10px" }}>
                 {`${selectedUser.firstname} ${selectedUser.lastname}`}
               </Title>
 
-              {/* User Details */}
-              <Descriptions bordered size="small" column={1} layout="vertical">
+              <Title level={4} style={{ marginBottom: 15, textAlign: "start" }}>
+                📋 Member Information
+              </Title>
+
+              <Descriptions
+                bordered
+                size="small"
+                column={1}
+                layout="horizontal"
+              >
                 <Descriptions.Item label="Email">
                   <Text>{selectedUser.email}</Text>
                 </Descriptions.Item>
@@ -171,7 +185,7 @@ const ManageUsers = () => {
               </Descriptions>
 
               {/* Valid IDs Section */}
-              <div style={{ marginTop: "20px", textAlign: "left" }}>
+              <div style={{ marginTop: "20px", textAlign: "center" }}>
                 <Title level={5}>
                   <IdcardOutlined style={{ marginRight: "10px" }} />
                   Valid IDs
@@ -183,7 +197,10 @@ const ManageUsers = () => {
                         src={selectedUser.images2}
                         alt="Valid ID 1"
                         width={150}
-                        style={{ borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
+                        style={{
+                          borderRadius: "8px",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                        }}
                       />
                     )}
                     {selectedUser.images3 && (
@@ -191,7 +208,10 @@ const ManageUsers = () => {
                         src={selectedUser.images3}
                         alt="Valid ID 2"
                         width={150}
-                        style={{ borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
+                        style={{
+                          borderRadius: "8px",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                        }}
                       />
                     )}
                   </Space>
