@@ -460,7 +460,7 @@ const ManagePets = ({ adminName }) => {
             centered
             width={600}
             bodyStyle={{
-              height: "500px",
+              height: "450px",
               overflowY: "auto",
             }}
           >

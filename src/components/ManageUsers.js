@@ -143,6 +143,10 @@ const ManageUsers = () => {
           ]}
           centered
           width={600}
+          bodyStyle={{
+            height: "450px",
+            overflowY: "auto",
+          }}
         >
           {selectedUser && (
             <div style={{ textAlign: "center" }}>
