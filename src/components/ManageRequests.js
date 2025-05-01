@@ -84,7 +84,16 @@ const ManageRequests = ({ adminName }) => {
       setPetDetails(petDoc.exists() ? petDoc.data() : null);
 
       const userDoc = await getDoc(doc(db, "users", request.uid));
-      setUserDetails(userDoc.exists() ? userDoc.data() : null);
+      const userBasic = userDoc.exists() ? userDoc.data() : {};
+
+      const formSnapshot = await getDocs(collection(db, "request_form"));
+
+      const matchedForm = formSnapshot.docs.find(
+        (doc) => doc.data().user_id === request.uid
+      );
+
+      const formDetails = matchedForm ? matchedForm.data() : {};
+      setUserDetails({ ...userBasic, ...formDetails });
     } catch (error) {
       console.error("Error fetching details:", error);
       message.error("Failed to load additional details.");
@@ -204,8 +213,9 @@ const ManageRequests = ({ adminName }) => {
             visible={isModalVisible}
             onCancel={handleClose}
             bodyStyle={{
-              height: "450px", 
-              overflowY: "auto", 
+              padding: "0px 24px", // adjust side padding as needed
+              maxHeight: "70vh",
+              overflowY: "auto",
             }}
             footer={[
               selectedRequest?.status === "Pending" && (
@@ -226,7 +236,9 @@ const ManageRequests = ({ adminName }) => {
               <Card style={{ textAlign: "center", borderRadius: "12px" }}>
                 <Image
                   src={
-                    userDetails?.profile_image ||
+                    userDetails?.images2 ||
+                    userDetails?.images3 ||
+                    userDetails?.images ||
                     "https://via.placeholder.com/100?text=No+Image"
                   }
                   alt="User Profile"
@@ -237,7 +249,9 @@ const ManageRequests = ({ adminName }) => {
                     objectFit: "cover",
                     marginBottom: "20px",
                   }}
+                  fallback="https://via.placeholder.com/100?text=No+Image"
                 />
+
                 <Title level={4}>{selectedRequest.fullname}</Title>
                 <Space direction="vertical" style={{ marginBottom: "20px" }}>
                   <Badge
@@ -262,30 +276,94 @@ const ManageRequests = ({ adminName }) => {
                     )}
                 </Space>
 
-                <Descriptions bordered column={1} style={{ marginTop: "10px" }}>
-                  <Descriptions.Item label="Email">
-                    {userDetails?.email || "N/A"}
+                <Descriptions
+                  bordered
+                  column={1}
+                  title="Adopter Information"
+                  style={{ marginTop: "10px", marginBottom: "20px" }}
+                >
+                  <Descriptions.Item label="Full Name">
+                    {selectedRequest?.fullname?.trim() || "N/A"}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Contact">
-                    {userDetails?.contact || "N/A"}
+                  <Descriptions.Item label="Email">
+                    {userDetails?.email?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Phone">
+                    {userDetails?.phone?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Date of Birth">
+                    {userDetails?.dateofbirth?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Address">
+                    {[userDetails?.address, userDetails?.city, userDetails?.zip]
+                      .filter(Boolean)
+                      .join(", ") || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Residence Type">
+                    {userDetails?.residence?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Ownership">
+                    {userDetails?.ownership?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Adults in Household">
+                    {userDetails?.adults?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Children in Household">
+                    {userDetails?.children?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Has Allergies?">
+                    {userDetails?.allergies?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Explanation (Allergies)">
+                    {userDetails?.explanationallergies?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Current Pets">
+                    {userDetails?.currentpets?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Current Pet Details">
+                    {userDetails?.currentpetdetails?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Past Pets">
+                    {userDetails?.pastpets?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Past Pet Details">
+                    {userDetails?.pastpetdetails?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Hours Pet Left Alone">
+                    {userDetails?.hoursalone?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Pet Stay When Away">
+                    {userDetails?.petstaywhenaway?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Financial Responsibility">
+                    {userDetails?.financialresponsibility?.trim() || "N/A"}
                   </Descriptions.Item>
                   <Descriptions.Item label="Valid IDs">
-                    {userDetails?.valid_ids || "No valid IDs"}
+                    {userDetails?.valid_ids?.trim() || "No valid IDs"}
                   </Descriptions.Item>
-                  {petDetails && (
-                    <>
-                      <Descriptions.Item label="Pet Name">
-                        {petDetails.pet_name}
-                      </Descriptions.Item>
-                      <Descriptions.Item label="Type">
-                        {petDetails.type}
-                      </Descriptions.Item>
-                      <Descriptions.Item label="Age">
-                        {petDetails.age}
-                      </Descriptions.Item>
-                    </>
-                  )}
                 </Descriptions>
+
+                {petDetails && (
+                  <Descriptions
+                    bordered
+                    column={1}
+                    title="Pet Information to Adopt"
+                    style={{ marginTop: "20px" }}
+                  >
+                    <Descriptions.Item label="Pet Name">
+                      {petDetails.pet_name?.trim() || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Pet Type">
+                      {petDetails.type?.trim() || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Pet Age">
+                      {petDetails.age?.trim() || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Pet Size">
+                      {petDetails.size?.trim() || "N/A"}
+                    </Descriptions.Item>
+                  </Descriptions>
+                )}
               </Card>
             )}
           </Modal>
@@ -297,7 +375,7 @@ const ManageRequests = ({ adminName }) => {
                 const requestRef = doc(db, "request", selectedRequest.id);
                 await updateDoc(requestRef, {
                   status: "Disapprove",
-                  declineReason, 
+                  declineReason,
                 });
                 setRequests((prevRequests) =>
                   prevRequests.map((req) =>

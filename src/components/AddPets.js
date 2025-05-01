@@ -31,13 +31,12 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
 
   useEffect(() => {
     if (isEdit && pet) {
-      form.resetFields(); // reset *before* setting new values
+      form.resetFields(); 
       form.setFieldsValue({
         ...pet,
         arrivaldate: pet.arrivaldate ? dayjs(pet.arrivaldate) : null,
       });
 
-      // Always update the preview image, even if it's null
       setImagePreview(pet.images || null);
     }
   }, [isEdit, pet]);
@@ -55,7 +54,7 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
 
   const onFinish = async (values) => {
     setUploading(true);
-    let imageUrl = pet?.images || ""; // fallback to existing image if not changed
+    let imageUrl = pet?.images || ""; 
 
     try {
       if (values.imageFile && values.imageFile[0]) {
@@ -108,21 +107,14 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
   };
 
   return (
-    // <div
-    //   style={{
-    //     minHeight: "100vh",
-    //     background: "black",
-    //     padding: "40px 20px",
-    //   }}
-    // >
     <Card
       bordered={false}
       style={{
-        boxShadow: "none", // remove extra shadow
+        boxShadow: "none", 
         borderRadius: "8px",
         padding: "0px",
         background: "#fff",
-        width: "100%", // full width inside modal
+        width: "100%", 
       }}
     >
       <Title level={3} style={{ textAlign: "center", marginBottom: "10px" }}>
@@ -151,7 +143,7 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
         style={{ width: "100%" }}
       >
         <Row gutter={[24, 24]}>
-          {/* Upload Image */}
+
           <Col xs={24}>
             <Form.Item
               name="imageFile"
@@ -392,8 +384,6 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
               />
             </Form.Item>
           </Col>
-
-          {/* Submit Button */}
           <Col xs={24}>
             <Form.Item>
               <Button
@@ -409,7 +399,6 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
         </Row>
       </Form>
     </Card>
-    // </div>
   );
 };
 
