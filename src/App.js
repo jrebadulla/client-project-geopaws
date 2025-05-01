@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import LoginPage from "./LoginPage";
 import LandingPage from "./LandingPage";
 import AddPets from "./components/AddPets";
@@ -13,15 +18,18 @@ import ManageMessages from "./components/Messages";
 import IncidentDetails from "./components/IncidentDetails";
 
 // Wrapper component to enforce authentication
-const ProtectedRoute = ({ isAuthenticated, children }) => {
+const ProtectedRoute = ({ isAuthenticated, isLoadingAuth, children }) => {
+  if (isLoadingAuth) {
+    return <div>Loading authentication...</div>;
+  }
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminUid, setAdminUid] = useState(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true); // <-- Moved here
 
-  // Load authentication state on app start
   useEffect(() => {
     const storedAuth = localStorage.getItem("isAuthenticated");
     const storedUid = localStorage.getItem("adminUid");
@@ -29,54 +37,41 @@ function App() {
     if (storedAuth === "true" && storedUid) {
       setIsAuthenticated(true);
       setAdminUid(storedUid);
-      console.log("Admin UID loaded from localStorage:", storedUid);
-    } else {
-      console.warn("Admin UID not found in localStorage.");
     }
+
+    setIsLoadingAuth(false);
   }, []);
 
-  // Login handler
   const handleLoginSuccess = (uid) => {
-    console.log("Admin logged in with UID:", uid);
     setIsAuthenticated(true);
     setAdminUid(uid);
-
-    // Persist login state in localStorage
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem("adminUid", uid);
   };
 
-  // Logout handler
   const handleLogout = () => {
     setIsAuthenticated(false);
     setAdminUid(null);
-
-    // Clear localStorage
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("adminUid");
-    console.log("Admin logged out.");
   };
-
-  if (adminUid === null && isAuthenticated) {
-    // Render a fallback in case `adminUid` is temporarily unavailable
-    return <div>Loading...</div>;
-  }
 
   return (
     <Router>
       <div className="App">
         <Routes>
-          {/* Public Route: Login */}
           <Route
             path="/login"
             element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
           />
 
-          {/* Protected Routes */}
           <Route
             path="/"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <LandingPage adminUid={adminUid} onLogout={handleLogout} />
               </ProtectedRoute>
             }
@@ -85,7 +80,10 @@ function App() {
           <Route
             path="/add-pets"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <AddPets adminUid={adminUid} />
               </ProtectedRoute>
             }
@@ -94,7 +92,10 @@ function App() {
           <Route
             path="/manage-pets"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <ManagePets adminUid={adminUid} />
               </ProtectedRoute>
             }
@@ -103,7 +104,10 @@ function App() {
           <Route
             path="/feedback"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <Feedback adminUid={adminUid} />
               </ProtectedRoute>
             }
@@ -112,7 +116,10 @@ function App() {
           <Route
             path="/pet-reports"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <ManagePetReports adminUid={adminUid} />
               </ProtectedRoute>
             }
@@ -121,7 +128,10 @@ function App() {
           <Route
             path="/incident/:id"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <IncidentDetails adminUid={adminUid} />
               </ProtectedRoute>
             }
@@ -130,7 +140,10 @@ function App() {
           <Route
             path="/requests"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <ManageRequests adminUid={adminUid} />
               </ProtectedRoute>
             }
@@ -139,7 +152,10 @@ function App() {
           <Route
             path="/users"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <ManageUsers adminUid={adminUid} />
               </ProtectedRoute>
             }
@@ -148,7 +164,10 @@ function App() {
           <Route
             path="/messages"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <ManageMessages adminUid={adminUid} />
               </ProtectedRoute>
             }
@@ -157,13 +176,15 @@ function App() {
           <Route
             path="/reports"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
                 <Reports adminUid={adminUid} />
               </ProtectedRoute>
             }
           />
 
-          {/* Default route: Redirect to login */}
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </div>

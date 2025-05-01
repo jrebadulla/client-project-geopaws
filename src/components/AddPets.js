@@ -31,13 +31,12 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
 
   useEffect(() => {
     if (isEdit && pet) {
-      form.resetFields(); // reset *before* setting new values
+      form.resetFields(); 
       form.setFieldsValue({
         ...pet,
         arrivaldate: pet.arrivaldate ? dayjs(pet.arrivaldate) : null,
       });
 
-      // Always update the preview image, even if it's null
       setImagePreview(pet.images || null);
     }
   }, [isEdit, pet]);
@@ -55,7 +54,7 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
 
   const onFinish = async (values) => {
     setUploading(true);
-    let imageUrl = pet?.images || ""; // fallback to existing image if not changed
+    let imageUrl = pet?.images || ""; 
 
     try {
       if (values.imageFile && values.imageFile[0]) {
@@ -108,21 +107,14 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
   };
 
   return (
-    // <div
-    //   style={{
-    //     minHeight: "100vh",
-    //     background: "black",
-    //     padding: "40px 20px",
-    //   }}
-    // >
     <Card
       bordered={false}
       style={{
-        boxShadow: "none", // remove extra shadow
+        boxShadow: "none", 
         borderRadius: "8px",
         padding: "0px",
         background: "#fff",
-        width: "100%", // full width inside modal
+        width: "100%", 
       }}
     >
       <Title level={3} style={{ textAlign: "center", marginBottom: "10px" }}>
@@ -151,7 +143,7 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
         style={{ width: "100%" }}
       >
         <Row gutter={[24, 24]}>
-          {/* Upload Image */}
+
           <Col xs={24}>
             <Form.Item
               name="imageFile"
@@ -206,7 +198,7 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
                   alignItems: "center",
                 }}
               >
-                📋 Basic Information
+                📋 Pet Information
               </Title>
             </Form.Item>
           </Col>
@@ -228,15 +220,18 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
           <Col xs={24} sm={12}>
             <Form.Item
               name="type"
-              label="Species"
+              label="Type of Animal"
               rules={[
                 {
                   required: true,
-                  message: "Please enter the species!",
+                  message: "Please select the Type of Animal!",
                 },
               ]}
             >
-              <Input placeholder="e.g., Dog, Cat, Bird" />
+              <Select placeholder="Select animal type">
+                <Select.Option value="Dog">Dog</Select.Option>
+                <Select.Option value="Cat">Cat</Select.Option>
+              </Select>
             </Form.Item>
           </Col>
 
@@ -309,10 +304,11 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
           <Col xs={24} sm={12}></Col>
 
           <Col xs={24} sm={12}>
-            <Form.Item name="spayed_neutered" label="Spayed/Neutered">
+            <Form.Item name="skin_condition" label="Skin Condition">
               <Select>
-                <Option value="Yes">Yes</Option>
-                <Option value="No">No</Option>
+                <Option value="Good">Good</Option>
+                <Option value="Moderate Issue">Moderate Issue</Option>
+                <Option value="Bad">Bad</Option>
               </Select>
             </Form.Item>
           </Col>
@@ -326,26 +322,8 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
             </Form.Item>
           </Col>
 
-          <Col xs={24} sm={12}>
-            <Form.Item name="dewormed" label="Dewormed">
-              <Select>
-                <Option value="Yes">Yes</Option>
-                <Option value="No">No</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-
-          <Col xs={24} sm={12}>
-            <Form.Item name="microchipped" label="Microchipped">
-              <Select>
-                <Option value="Yes">Yes</Option>
-                <Option value="No">No</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-
           <Col xs={24}>
-            <Form.Item name="medical_conditions" label="Medical Conditions">
+            <Form.Item name="appearance" label="Appearance">
               <Input placeholder="e.g., None, Allergies, Special Needs" />
             </Form.Item>
           </Col>
@@ -377,27 +355,6 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
             </Form.Item>
           </Col>
 
-          <Col xs={24}>
-            <Form.Item name="good_with" label="Good with">
-              <CheckboxGroup>
-                <Checkbox value="Dogs">Other Dogs</Checkbox>
-                <Checkbox value="Cats">Cats</Checkbox>
-                <Checkbox value="Children">Children</Checkbox>
-                <Checkbox value="All">All of the above</Checkbox>
-              </CheckboxGroup>
-            </Form.Item>
-          </Col>
-
-          <Col xs={24}>
-            <Form.Item name="training_level" label="Training Level">
-              <Select>
-                <Option value="House-trained">House-trained</Option>
-                <Option value="Basic Commands">Basic Commands</Option>
-                <Option value="Needs Training">Needs Training</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-
           {/* RESCUE STORY (OPTIONAL) */}
           <Col xs={24} sm={12}>
             <Form.Item colon={false} label=" " style={{ marginBottom: 0 }}>
@@ -412,7 +369,7 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
                   whiteSpace: "nowrap",
                 }}
               >
-                📖 Rescue Story (Optional)
+                📖 Background (Optional)
               </Title>
             </Form.Item>
           </Col>
@@ -420,15 +377,13 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
           <Col xs={24} sm={12}></Col>
 
           <Col xs={24}>
-            <Form.Item name="rescue_story">
+            <Form.Item name="background">
               <Input.TextArea
                 rows={4}
                 placeholder="Share the rescue background or story..."
               />
             </Form.Item>
           </Col>
-
-          {/* Submit Button */}
           <Col xs={24}>
             <Form.Item>
               <Button
@@ -444,7 +399,6 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
         </Row>
       </Form>
     </Card>
-    // </div>
   );
 };
 

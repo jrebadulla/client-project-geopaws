@@ -23,7 +23,7 @@ import {
   Input,
 } from "antd";
 import Sidebar from "./Sidebar";
-import HeaderBar from "./HeaderBar"; // Import the reusable HeaderBar component
+import HeaderBar from "./HeaderBar";
 
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
@@ -40,7 +40,6 @@ const ManageRequests = ({ adminName }) => {
   const [declineReason, setDeclineReason] = useState("");
   const [declineModalVisible, setDeclineModalVisible] = useState(false);
 
-  // Fetch requests from Firestore
   useEffect(() => {
     const fetchRequests = async () => {
       try {
@@ -53,7 +52,7 @@ const ManageRequests = ({ adminName }) => {
         setRequests(requestsList);
         setFilteredRequests(
           requestsList.filter((req) => req.status === "Pending")
-        ); // ✅
+        );
         setActiveTab("Pending");
       } catch (error) {
         console.error("Error fetching requests:", error);
@@ -65,7 +64,6 @@ const ManageRequests = ({ adminName }) => {
     fetchRequests();
   }, []);
 
-  // Handle Tab Change
   const handleTabChange = (key) => {
     setActiveTab(key);
     if (key === "All") {
@@ -86,14 +84,22 @@ const ManageRequests = ({ adminName }) => {
       setPetDetails(petDoc.exists() ? petDoc.data() : null);
 
       const userDoc = await getDoc(doc(db, "users", request.uid));
-      setUserDetails(userDoc.exists() ? userDoc.data() : null);
+      const userBasic = userDoc.exists() ? userDoc.data() : {};
+
+      const formSnapshot = await getDocs(collection(db, "request_form"));
+
+      const matchedForm = formSnapshot.docs.find(
+        (doc) => doc.data().user_id === request.uid
+      );
+
+      const formDetails = matchedForm ? matchedForm.data() : {};
+      setUserDetails({ ...userBasic, ...formDetails });
     } catch (error) {
       console.error("Error fetching details:", error);
       message.error("Failed to load additional details.");
     }
   };
 
-  // Close modal
   const handleClose = () => {
     setIsModalVisible(false);
     setSelectedRequest(null);
@@ -101,7 +107,6 @@ const ManageRequests = ({ adminName }) => {
     setUserDetails(null);
   };
 
-  // Archive a request instead of deleting
   const handleArchive = async (requestId) => {
     try {
       const requestRef = doc(db, "request", requestId);
@@ -118,7 +123,6 @@ const ManageRequests = ({ adminName }) => {
     }
   };
 
-  // Update request status
   const updateStatus = async (status) => {
     try {
       if (selectedRequest) {
@@ -143,7 +147,6 @@ const ManageRequests = ({ adminName }) => {
     setDeclineModalVisible(true);
   };
 
-  // Table columns
   const columns = [
     { title: "Full Name", dataIndex: "fullname", key: "fullname" },
     {
@@ -155,7 +158,7 @@ const ManageRequests = ({ adminName }) => {
           status={
             status === "Approved"
               ? "success"
-              : status === "Declined"
+              : status === "Disapprove"
               ? "error"
               : "processing"
           }
@@ -171,11 +174,6 @@ const ManageRequests = ({ adminName }) => {
           <Button type="link" onClick={() => handleView(record)}>
             View
           </Button>
-          {/* {record.status !== "Archived" && (
-            <Button type="link" danger onClick={() => handleArchive(record.id)}>
-              Archive
-            </Button>
-          )} */}
         </Space>
       ),
     },
@@ -193,14 +191,12 @@ const ManageRequests = ({ adminName }) => {
             </Title>
           </Card>
 
-          {/* Tabs */}
           <Tabs activeKey={activeTab} onChange={handleTabChange} centered>
             <TabPane tab="Pending" key="Pending" />
             <TabPane tab="Approved" key="Approved" />
-            <TabPane tab="Declined" key="Declined" />
+            <TabPane tab="Disapprove" key="Disapprove" />
           </Tabs>
 
-          {/* Table */}
           <Card>
             <Table
               dataSource={filteredRequests}
@@ -212,26 +208,23 @@ const ManageRequests = ({ adminName }) => {
             />
           </Card>
 
-          {/* Modal */}
           <Modal
             title={null}
             visible={isModalVisible}
             onCancel={handleClose}
             bodyStyle={{
-              height: "450px", // Set your fixed height
-              overflowY: "auto", // Enable vertical scrolling
+              padding: "0px 24px", // adjust side padding as needed
+              maxHeight: "70vh",
+              overflowY: "auto",
             }}
             footer={[
-              <Button key="close" onClick={handleClose}>
-                Close
-              </Button>,
               selectedRequest?.status === "Pending" && (
                 <>
                   <Button key="approve" type="primary" onClick={handleApprove}>
                     Approve
                   </Button>
                   <Button danger type="primary" onClick={handleDecline}>
-                    Decline
+                    Disapprove
                   </Button>
                 </>
               ),
@@ -243,7 +236,9 @@ const ManageRequests = ({ adminName }) => {
               <Card style={{ textAlign: "center", borderRadius: "12px" }}>
                 <Image
                   src={
-                    userDetails?.profile_image ||
+                    userDetails?.images2 ||
+                    userDetails?.images3 ||
+                    userDetails?.images ||
                     "https://via.placeholder.com/100?text=No+Image"
                   }
                   alt="User Profile"
@@ -254,14 +249,16 @@ const ManageRequests = ({ adminName }) => {
                     objectFit: "cover",
                     marginBottom: "20px",
                   }}
+                  fallback="https://via.placeholder.com/100?text=No+Image"
                 />
+
                 <Title level={4}>{selectedRequest.fullname}</Title>
                 <Space direction="vertical" style={{ marginBottom: "20px" }}>
                   <Badge
                     status={
                       selectedRequest.status === "Approved"
                         ? "success"
-                        : selectedRequest.status === "Declined"
+                        : selectedRequest.status === "Disapprove"
                         ? "error"
                         : "processing"
                     }
@@ -271,7 +268,7 @@ const ManageRequests = ({ adminName }) => {
                       </Text>
                     }
                   />
-                  {selectedRequest.status === "Declined" &&
+                  {selectedRequest.status === "Disapprove" &&
                     selectedRequest.declineReason && (
                       <Text type="danger" style={{ fontSize: "14px" }}>
                         Reason: {selectedRequest.declineReason}
@@ -279,55 +276,115 @@ const ManageRequests = ({ adminName }) => {
                     )}
                 </Space>
 
-                <Descriptions bordered column={1} style={{ marginTop: "10px" }}>
-                  <Descriptions.Item label="Email">
-                    {userDetails?.email || "N/A"}
+                <Descriptions
+                  bordered
+                  column={1}
+                  title="Adopter Information"
+                  style={{ marginTop: "10px", marginBottom: "20px" }}
+                >
+                  <Descriptions.Item label="Full Name">
+                    {selectedRequest?.fullname?.trim() || "N/A"}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Contact">
-                    {userDetails?.contact || "N/A"}
+                  <Descriptions.Item label="Email">
+                    {userDetails?.email?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Phone">
+                    {userDetails?.phone?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Date of Birth">
+                    {userDetails?.dateofbirth?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Address">
+                    {[userDetails?.address, userDetails?.city, userDetails?.zip]
+                      .filter(Boolean)
+                      .join(", ") || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Residence Type">
+                    {userDetails?.residence?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Ownership">
+                    {userDetails?.ownership?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Adults in Household">
+                    {userDetails?.adults?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Children in Household">
+                    {userDetails?.children?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Has Allergies?">
+                    {userDetails?.allergies?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Explanation (Allergies)">
+                    {userDetails?.explanationallergies?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Current Pets">
+                    {userDetails?.currentpets?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Current Pet Details">
+                    {userDetails?.currentpetdetails?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Past Pets">
+                    {userDetails?.pastpets?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Past Pet Details">
+                    {userDetails?.pastpetdetails?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Hours Pet Left Alone">
+                    {userDetails?.hoursalone?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Pet Stay When Away">
+                    {userDetails?.petstaywhenaway?.trim() || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Financial Responsibility">
+                    {userDetails?.financialresponsibility?.trim() || "N/A"}
                   </Descriptions.Item>
                   <Descriptions.Item label="Valid IDs">
-                    {userDetails?.valid_ids || "No valid IDs"}
+                    {userDetails?.valid_ids?.trim() || "No valid IDs"}
                   </Descriptions.Item>
-                  {petDetails && (
-                    <>
-                      <Descriptions.Item label="Pet Name">
-                        {petDetails.pet_name}
-                      </Descriptions.Item>
-                      <Descriptions.Item label="Type">
-                        {petDetails.type}
-                      </Descriptions.Item>
-                      <Descriptions.Item label="Age">
-                        {petDetails.age}
-                      </Descriptions.Item>
-                    </>
-                  )}
                 </Descriptions>
+
+                {petDetails && (
+                  <Descriptions
+                    bordered
+                    column={1}
+                    title="Pet Information to Adopt"
+                    style={{ marginTop: "20px" }}
+                  >
+                    <Descriptions.Item label="Pet Name">
+                      {petDetails.pet_name?.trim() || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Pet Type">
+                      {petDetails.type?.trim() || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Pet Age">
+                      {petDetails.age?.trim() || "N/A"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Pet Size">
+                      {petDetails.size?.trim() || "N/A"}
+                    </Descriptions.Item>
+                  </Descriptions>
+                )}
               </Card>
             )}
           </Modal>
           <Modal
-            title="Decline Request"
+            title="Disapprove Request"
             visible={declineModalVisible}
             onOk={async () => {
-              if (!declineReason.trim()) {
-                message.error("Decline reason is required!");
-                return;
-              }
               try {
                 const requestRef = doc(db, "request", selectedRequest.id);
                 await updateDoc(requestRef, {
-                  status: "Declined",
+                  status: "Disapprove",
                   declineReason,
                 });
                 setRequests((prevRequests) =>
                   prevRequests.map((req) =>
                     req.id === selectedRequest.id
-                      ? { ...req, status: "Declined", declineReason }
+                      ? { ...req, status: "Disapprove", declineReason }
                       : req
                   )
                 );
-                message.success("Request declined successfully!");
+                message.success("Request Disapproved successfully!");
                 handleClose();
               } catch (error) {
                 console.error("Error declining request:", error);
@@ -347,7 +404,7 @@ const ManageRequests = ({ adminName }) => {
           >
             <Input.TextArea
               rows={4}
-              placeholder="Enter decline reason"
+              placeholder="Remarks (optional)"
               value={declineReason}
               onChange={(e) => setDeclineReason(e.target.value)}
             />

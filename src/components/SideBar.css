@@ -1,0 +1,11 @@
+
+
+.custom-sidebar .ant-menu-item-selected {
+  background-color: #90caf9 !important; 
+  color: #0d47a1 !important; 
+  font-weight: bold;
+}
+
+.custom-sidebar .ant-menu-item:hover {
+  background-color: #e3f2fd !important; 
+}
