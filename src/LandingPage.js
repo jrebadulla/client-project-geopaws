@@ -9,12 +9,15 @@ import {
   Spin,
   Modal,
   Table,
+  Dropdown,
+  Menu,
 } from "antd";
 import {
   UserOutlined,
   FileOutlined,
   SettingOutlined,
   PrinterOutlined,
+  FilterOutlined,
 } from "@ant-design/icons";
 import {
   BarChart,
@@ -58,11 +61,13 @@ const LandingPage = ({ adminName }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [filteredTableData, setFilteredTableData] = useState([]);
   const [concernFilters, setConcernFilters] = useState([]);
+  const [petStatusFilter, setPetStatusFilter] = useState(null);
 
   const handleCardClick = async (category) => {
     setSelectedCategory(category);
     setModalVisible(true);
     setTableLoading(true);
+    setFilteredTableData([]);
 
     try {
       if (category === "users") {
@@ -78,6 +83,8 @@ const LandingPage = ({ adminName }) => {
           id: doc.id,
           ...doc.data(),
         }));
+        setFilteredTableData(adoptionPetsData);
+        setPetStatusFilter(null);
         setTableData(adoptionPetsData);
       } else if (category === "closedReports") {
         const petReportsSnapshot = await getDocs(collection(db, "pet_reports"));
@@ -95,13 +102,6 @@ const LandingPage = ({ adminName }) => {
         }));
 
         setConcernFilters(uniqueConcerns);
-      } else if (category === "closedReports") {
-        const petReportsSnapshot = await getDocs(collection(db, "pet_reports"));
-        const petReportsData = petReportsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setTableData(petReportsData);
       } else if (category === "resolvedReports") {
         const reportsResolvedSnapshot = await getDocs(
           query(collection(db, "reports"), where("status", "==", "Resolved"))
@@ -130,46 +130,143 @@ const LandingPage = ({ adminName }) => {
 
   const handlePrint = () => {
     const doc = new jsPDF({ orientation: "landscape" });
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-    const columns = getColumns(selectedCategory)
-      .filter((col) => col.dataIndex !== "images")
-      .map((col) => ({
-        header: col.title,
-        dataKey: col.dataIndex,
-      }));
+    const logo = new Image();
+    logo.src = "/logo-brgy.png"; 
 
-    const dataToPrint =
-      filteredTableData.length > 0 ? filteredTableData : tableData;
+    logo.onload = () => {
+      const logoWidth = 30;
+      const logoHeight = 30;
+      const lineHeight = 6;
 
-    const rows = dataToPrint.map((item) => {
-      const row = {};
-      columns.forEach((col) => {
-        row[col.dataKey] = item[col.dataKey] || "";
+      const headerLines = [
+        "Republic of the Philippines",
+        "Province of Laguna",
+        "BARANGAY GOVERNMENT OF PACITA",
+        "CITY OF SAN PEDRO",
+        "Tel. Nos.: (02) 8868-03-62",
+        "OFFICE OF THE PUNONG BARANGAY",
+      ];
+
+      const textHeight = headerLines.length * lineHeight;
+      const maxTextWidth = Math.max(
+        ...headerLines.map((line) => doc.getTextWidth(line))
+      );
+      const totalHeaderWidth = logoWidth + 10 + maxTextWidth;
+
+      const startX = (pageWidth - totalHeaderWidth) / 2;
+      const logoY = 12 + (textHeight - logoHeight) / 2;
+
+      const textX = startX + logoWidth + 10;
+      const titleY = logoY + textHeight + 10;
+
+      const originalColumns = getColumns(selectedCategory).filter(
+        (col) => !["image", "images"].includes(col.dataIndex)
+      );
+
+      const autoTableColumns = [
+        { header: "No.", dataKey: "no" },
+        ...originalColumns.map((col) => ({
+          header: col.title,
+          dataKey: col.dataIndex,
+        })),
+      ];
+
+      const rawData =
+        selectedCategory === "pendingReports" && filteredTableData.length > 0
+          ? filteredTableData
+          : tableData;
+
+      const dataToPrint = rawData.map((item, index) => {
+        const row = { no: index + 1 };
+        originalColumns.forEach((col) => {
+          const value = item[col.dataIndex];
+          row[col.dataIndex] =
+            value !== undefined && value !== null
+              ? Array.isArray(value)
+                ? value.join(", ")
+                : value
+              : "";
+        });
+        return row;
       });
-      return row;
-    });
 
-    doc.setFontSize(16);
-    doc.text(getModalTitle(selectedCategory), 14, 20);
+      const chunkedData = [];
+      for (let i = 0; i < dataToPrint.length; i += 10) {
+        chunkedData.push(dataToPrint.slice(i, i + 10));
+      }
 
-    autoTable(doc, {
-      startY: 28,
-      head: [columns.map((col) => col.header)],
-      body: rows.map((row) => columns.map((col) => row[col.dataKey])),
-      styles: {
-        fontSize: 10,
-        overflow: "linebreak",
-        cellWidth: "wrap",
-      },
-      margin: { top: 30, left: 10, right: 10 },
-      theme: "grid",
-      headStyles: { fillColor: [24, 144, 255] },
-      didDrawPage: (data) => {
-        doc.setFontSize(16);
-        doc.text(getModalTitle(selectedCategory), 14, 20);
-      },
-    });
-    doc.save(`${getModalTitle(selectedCategory)}.pdf`);
+      chunkedData.forEach((chunk, index) => {
+        if (index > 0) doc.addPage();
+
+        autoTable(doc, {
+          startY: titleY + 10,
+          columns: autoTableColumns,
+          body: chunk,
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [91, 155, 213] },
+          margin: { top: 70, left: 14, right: 14 },
+          theme: "grid",
+          didDrawPage: () => {
+            doc.addImage(logo, "PNG", startX, logoY, logoWidth, logoHeight);
+            headerLines.forEach((line, i) => {
+              const y = logoY + i * lineHeight;
+              doc.setFont(
+                undefined,
+                [
+                  "BARANGAY GOVERNMENT OF PACITA",
+                  "OFFICE OF THE PUNONG BARANGAY",
+                ].includes(line)
+                  ? "bold"
+                  : "normal"
+              );
+              doc.setFontSize(11);
+              doc.text(line, textX, y);
+            });
+            doc.setFontSize(16);
+            doc.setFont(undefined, "bold");
+            let pdfTitle = getModalTitle(selectedCategory);
+            if (selectedCategory === "pendingReports") {
+              if (petStatusFilter === "Available") {
+                pdfTitle = "LIST OF AVAILABLE PETS";
+              } else if (petStatusFilter === "Adopted") {
+                pdfTitle = "LIST OF ADOPTED PETS";
+              }
+            }
+
+            doc.text(pdfTitle, pageWidth / 2, titleY, {
+              align: "center",
+            });
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, "bold");
+            doc.text(
+              `Date: ${new Date().toLocaleDateString()}`,
+              pageWidth - 44,
+              titleY
+            );
+          },
+        });
+
+        if (index === chunkedData.length - 1) {
+          const baseY = doc.lastAutoTable.finalY + 20;
+          const marginLeft = 30;
+          const rowenaLeft = marginLeft + 30;
+          const titleLeft = marginLeft + 27;
+
+          doc.setFontSize(12);
+          doc.setFont(undefined, "bold");
+          doc.text("Prepared by:", marginLeft, baseY);
+
+          doc.setFont(undefined, "normal");
+          doc.text("Rowena Que", rowenaLeft, baseY + 7);
+          doc.text("Barangay Admin", titleLeft, baseY + 14);
+        }
+      });
+
+      window.open(doc.output("bloburl"), "_blank");
+    };
   };
 
   const getColumns = (category) => {
@@ -180,8 +277,6 @@ const LandingPage = ({ adminName }) => {
         { title: "Email", dataIndex: "email", key: "email" },
         { title: "Contact", dataIndex: "contact", key: "contact" },
         { title: "Address", dataIndex: "address", key: "address" },
-        { title: "Age", dataIndex: "age", key: "age" },
-        { title: "Type", dataIndex: "type", key: "type" },
       ];
     } else if (category === "pendingRequests") {
       return [
@@ -204,7 +299,7 @@ const LandingPage = ({ adminName }) => {
     } else if (category === "closedReports") {
       return [
         {
-          title: "Concern",
+          title: "Report Type",
           dataIndex: "pet_name",
           key: "pet_name",
           filters: concernFilters,
@@ -275,59 +370,11 @@ const LandingPage = ({ adminName }) => {
           dataIndex: "breed",
           key: "breed",
         },
-        {
-          title: "Medical Conditions",
-          dataIndex: "medical_conditions",
-          key: "medical_conditions",
-        },
-        {
-          title: "Temperament",
-          dataIndex: "temperament",
-          key: "temperament",
-        },
-        {
-          title: "Training Level",
-          dataIndex: "training_level",
-          key: "training_level",
-        },
-        {
-          title: "Good With",
-          dataIndex: "good_with",
-          key: "good_with",
-          render: (good_with) =>
-            Array.isArray(good_with) ? good_with.join(", ") : good_with,
-        },
+
         {
           title: "Arrival Date",
           dataIndex: "arrivaldate",
           key: "arrivaldate",
-        },
-        {
-          title: "Status",
-          dataIndex: "status",
-          key: "status",
-          filters: [
-            { text: "Available", value: "Available" },
-            { text: "Adopted", value: "Adopted" },
-          ],
-          onFilter: (value, record) => record.status === value,
-        },
-        {
-          title: "Image",
-          dataIndex: "images",
-          key: "images",
-          render: (img) => (
-            <img
-              src={img}
-              alt="Pet"
-              style={{
-                width: "80px",
-                height: "80px",
-                objectFit: "cover",
-                borderRadius: "5px",
-              }}
-            />
-          ),
         },
       ];
     }
@@ -338,15 +385,15 @@ const LandingPage = ({ adminName }) => {
   const getModalTitle = (category) => {
     switch (category) {
       case "users":
-        return "User Details";
+        return "LIST OF USERS";
       case "pendingReports":
-        return "Adoption Details";
+        return "PET LIST";
       case "closedReports":
         return "Pet Reports Details";
       case "resolvedReports":
         return "Stray Animal Reports Details";
       case "pendingRequests":
-        return "Pet Adoption Details";
+        return "LIST OF AVAILABLE PETS";
       default:
         return "Details";
     }
@@ -436,11 +483,11 @@ const LandingPage = ({ adminName }) => {
                 justify="center"
                 style={{ marginBottom: "30px" }}
               >
-                <Col xs={24} sm={12} md={8}>
+                <Col xs={24} sm={12} md={6}>
                   <Card
                     hoverable
                     bordered
-                    style={{ textAlign: "center" }}
+                    style={{ textAlign: "center", height: "180px" }}
                     onClick={() => handleCardClick("users")}
                   >
                     <UserOutlined
@@ -454,7 +501,7 @@ const LandingPage = ({ adminName }) => {
                     <Text>Member</Text>
                   </Card>
                 </Col>
-                <Col xs={24} sm={12} md={8}>
+                <Col xs={24} sm={12} md={6}>
                   <Card
                     hoverable
                     bordered
@@ -473,7 +520,7 @@ const LandingPage = ({ adminName }) => {
                   </Card>
                 </Col>
 
-                <Col xs={24} sm={12} md={8}>
+                <Col xs={24} sm={12} md={6}>
                   <Card
                     hoverable
                     bordered
@@ -488,11 +535,11 @@ const LandingPage = ({ adminName }) => {
                       }}
                     />
                     <Title level={4}>{dataSummary.reportsClosed}</Title>
-                    <Text>Pet Reports</Text>
+                    <Text>Pet Rescue</Text>
                   </Card>
                 </Col>
 
-                <Col xs={24} sm={12} md={8}>
+                <Col xs={24} sm={12} md={6}>
                   <Card
                     hoverable
                     bordered
@@ -572,7 +619,48 @@ const LandingPage = ({ adminName }) => {
             </>
           )}
           <Modal
-            title={getModalTitle(selectedCategory)}
+            title={
+              selectedCategory === "pendingReports" ? (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                  }}
+                >
+                  <span style={{ fontWeight: "bold", fontSize: 16 }}>
+                    PET LIST
+                  </span>
+                  <Dropdown
+                    overlay={
+                      <Menu
+                        onClick={({ key }) => {
+                          setPetStatusFilter(key === "all" ? null : key);
+                          const filtered =
+                            key === "all"
+                              ? tableData
+                              : tableData.filter((item) => item.status === key);
+                          setFilteredTableData(filtered);
+                        }}
+                        selectedKeys={[petStatusFilter || "all"]}
+                      >
+                        <Menu.Item key="all">All Status</Menu.Item>
+                        <Menu.Item key="Available">Available</Menu.Item>
+                        <Menu.Item key="Adopted">Adopted</Menu.Item>
+                      </Menu>
+                    }
+                    placement="bottomLeft"
+                    trigger={["click"]}
+                  >
+                    <Button icon={<FilterOutlined />} size="small">
+                      {petStatusFilter}
+                    </Button>
+                  </Dropdown>
+                </div>
+              ) : (
+                getModalTitle(selectedCategory)
+              )
+            }
             visible={modalVisible}
             onCancel={() => setModalVisible(false)}
             footer={null}
@@ -584,7 +672,11 @@ const LandingPage = ({ adminName }) => {
             }}
           >
             <Table
-              dataSource={tableData}
+              dataSource={
+                selectedCategory === "pendingReports"
+                  ? filteredTableData
+                  : tableData
+              }
               columns={getColumns(selectedCategory)}
               rowKey={(record) => record.id || record.uid}
               loading={tableLoading}
