@@ -1,27 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import { Table, Typography, Card, Row, Col, Pagination, Spin, message } from "antd";
+import {
+  Typography,
+  Card,
+  Spin,
+  message,
+  Avatar,
+  List,
+  Space,
+  Empty,
+  Tag,
+} from "antd";
 import Sidebar from "./Sidebar";
+import { UserOutlined, CommentOutlined } from "@ant-design/icons";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const ManageFeedback = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [users, setUsers] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
-
-  // Fetch feedbacks and users from Firestore
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Fetch Feedbacks
         const feedbackCollection = collection(db, "feedback");
         const feedbackSnapshot = await getDocs(feedbackCollection);
         const feedbackList = feedbackSnapshot.docs.map((doc) => ({
@@ -30,7 +35,6 @@ const ManageFeedback = () => {
         }));
         setFeedbacks(feedbackList);
 
-        // Fetch Users
         const usersCollection = collection(db, "users");
         const usersSnapshot = await getDocs(usersCollection);
         const usersData = {};
@@ -49,71 +53,114 @@ const ManageFeedback = () => {
     fetchData();
   }, []);
 
-  // Handle Page Change
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  const getUserInfo = (uid) => {
+    const user = users[uid];
+    return user
+      ? {
+          name: `${user.firstname} ${user.lastname}`,
+          initials:
+            user.firstname?.[0]?.toUpperCase() +
+            user.lastname?.[0]?.toUpperCase(),
+        }
+      : { name: "Unknown User", initials: "?" };
   };
 
-  // Table Columns
-  const columns = [
-    {
-      title: "Name",
-      dataIndex: "uid",
-      key: "userName",
-      render: (uid) => {
-        const user = users[uid];
-        return user ? `${user.firstname} ${user.lastname}` : "Unknown User";
-      },
-    },
-    {
-      title: "Feedback",
-      dataIndex: "feedback",
-      key: "feedback",
-    }
-  ];
-
-  // Paginate the data
-  const paginatedData = feedbacks.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      {/* Sidebar */}
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f6f8fa" }}>
       <Sidebar />
 
-      {/* Main Content */}
-      <div style={{ flexGrow: 1, padding: "20px" }}>
-        <Card bordered style={{ marginBottom: "20px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>
-          <Title level={3} style={{ textAlign: "center", marginBottom: "0" }}>
-             Feedback
+      <div style={{ flexGrow: 1, padding: "24px" }}>
+        <Card
+          bordered={false}
+          style={{
+            marginBottom: "24px",
+            background: "#ffffff",
+            borderRadius: 12,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          }}
+        >
+          <Title level={3} style={{ textAlign: "center", marginBottom: 4 }}>
+            💬 User Feedback
           </Title>
+          <Text
+            type="secondary"
+            style={{ display: "block", textAlign: "center" }}
+          >
+            Insights and thoughts from users across the platform
+          </Text>
         </Card>
 
-        {/* Table */}
-        <Card>
+        <Card
+          style={{
+            borderRadius: 12,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            backgroundColor: "#ffffff",
+          }}
+          bodyStyle={{ padding: "24px" }}
+        >
           {loading ? (
-            <Spin size="large" style={{ display: "block", margin: "auto" }} />
+            <Spin
+              size="large"
+              style={{ display: "block", margin: "80px auto" }}
+            />
+          ) : feedbacks.length === 0 ? (
+            <Empty
+              description="No feedback submitted yet."
+              style={{ margin: "60px 0" }}
+            />
           ) : (
-            <>
-              <Table
-                dataSource={paginatedData}
-                columns={columns}
-                rowKey="id"
-                pagination={false}
-                bordered
-              />
-              {/* Pagination */}
-              <Row justify="center" style={{ marginTop: "20px" }}>
-                <Col>
-                  {/* <Pagination
-                    current={currentPage}
-                    pageSize={pageSize}
-                    total={feedbacks.length}
-                    onChange={handlePageChange}
-                    showSizeChanger={false}
-                  /> */}
-                </Col>
-              </Row>
-            </>
+            <List
+              itemLayout="vertical"
+              dataSource={feedbacks}
+              style={{ maxHeight: "600px", overflowY: "auto" }}
+              renderItem={(item) => {
+                const user = getUserInfo(item.uid);
+
+                return (
+                  <List.Item
+                    key={item.id}
+                    style={{
+                      border: "1px solid #f0f0f0",
+                      borderRadius: 8,
+                      padding: "16px 20px",
+                      marginBottom: 16,
+                      background: "#fafafa",
+                    }}
+                  >
+                    <Space align="start" style={{ width: "100%" }}>
+                      <Avatar
+                        size="large"
+                        style={{
+                          backgroundColor: "#1890ff",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {user.initials}
+                      </Avatar>
+                      <div style={{ flex: 1 }}>
+                        <Text strong style={{ fontSize: 16 }}>
+                          {user.name}
+                        </Text>
+                        <div
+                          style={{
+                            marginTop: 8,
+                            background: "#ffffff",
+                            padding: "12px 16px",
+                            borderRadius: 6,
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                          }}
+                        >
+                          <CommentOutlined
+                            style={{ color: "#1890ff", marginRight: 8 }}
+                          />
+                          <Text>{item.feedback}</Text>
+                        </div>
+                      </div>
+                    </Space>
+                  </List.Item>
+                );
+              }}
+            />
           )}
         </Card>
       </div>

@@ -31,7 +31,7 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
 
   useEffect(() => {
     if (isEdit && pet) {
-      form.resetFields(); 
+      form.resetFields();
       form.setFieldsValue({
         ...pet,
         arrivaldate: pet.arrivaldate ? dayjs(pet.arrivaldate) : null,
@@ -54,7 +54,7 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
 
   const onFinish = async (values) => {
     setUploading(true);
-    let imageUrl = pet?.images || ""; 
+    let imageUrl = pet?.images || "";
 
     try {
       if (values.imageFile && values.imageFile[0]) {
@@ -110,11 +110,11 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
     <Card
       bordered={false}
       style={{
-        boxShadow: "none", 
+        boxShadow: "none",
         borderRadius: "8px",
         padding: "0px",
         background: "#fff",
-        width: "100%", 
+        width: "100%",
       }}
     >
       <Title level={3} style={{ textAlign: "center", marginBottom: "10px" }}>
@@ -143,7 +143,6 @@ const AddPets = ({ pet = null, isEdit = false, onFinishSuccess }) => {
         style={{ width: "100%" }}
       >
         <Row gutter={[24, 24]}>
-
           <Col xs={24}>
             <Form.Item
               name="imageFile"
