@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Typography, Badge, message, Card, Tabs, Spin } from "antd";
+import { Typography, Badge, message, Card, Tabs, Spin } from "antd";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import Sidebar from "./Sidebar";
@@ -15,6 +15,7 @@ function ManageRequests({ adminName = "Admin" }) {
   const [requestData, setRequestData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Pending");
+  const [error, setError] = useState(null);
 
   const fetchRequests = async () => {
     try {
@@ -28,9 +29,11 @@ function ManageRequests({ adminName = "Admin" }) {
           status: data.status || "Pending",
         };
       });
+      console.log("Fetched data:", requestList);
       setRequestData(requestList);
     } catch (error) {
       console.error("Error fetching request_form:", error);
+      setError(error.message);
       message.error("Failed to fetch request data.");
     } finally {
       setLoading(false);
@@ -41,40 +44,78 @@ function ManageRequests({ adminName = "Admin" }) {
     fetchRequests();
   }, []);
 
+  // Filter data based on active tab
   const filteredData = Array.isArray(requestData)
     ? requestData.filter((item) => item.status === activeTab)
     : [];
 
-  const columns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-    },
-    {
-      title: "Phone",
-      dataIndex: "phone",
-      key: "phone",
-    },
-    {
-      title: "Pet Type",
-      dataIndex: "pettype",
-      key: "pettype",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <Badge status={STATUS_BADGE[status] || "default"} text={status} />
-      ),
-    },
-  ];
+  // Instead of using Ant Design Table, let's create a simple table
+  const renderSimpleTable = () => {
+    if (filteredData.length === 0) {
+      return <div>No {activeTab} requests found</div>;
+    }
+
+    return (
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={tableHeaderStyle}>Name</th>
+              <th style={tableHeaderStyle}>Email</th>
+              <th style={tableHeaderStyle}>Phone</th>
+              <th style={tableHeaderStyle}>Pet Type</th>
+              <th style={tableHeaderStyle}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.map((item) => (
+              <tr key={item.id}>
+                <td style={tableCellStyle}>{item.name || "N/A"}</td>
+                <td style={tableCellStyle}>{item.email || "N/A"}</td>
+                <td style={tableCellStyle}>{item.phone || "N/A"}</td>
+                <td style={tableCellStyle}>{item.pettype || "N/A"}</td>
+                <td style={tableCellStyle}>
+                  <span>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "50%",
+                        backgroundColor:
+                          item.status === "Approved"
+                            ? "#52c41a"
+                            : item.status === "Disapprove"
+                              ? "#f5222d"
+                              : "#1890ff",
+                        marginRight: "8px",
+                      }}
+                    ></span>
+                    {item.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const tableHeaderStyle = {
+    padding: "12px 16px",
+    backgroundColor: "#fafafa",
+    borderBottom: "1px solid #f0f0f0",
+    textAlign: "left",
+  };
+
+  const tableCellStyle = {
+    padding: "12px 16px",
+    borderBottom: "1px solid #f0f0f0",
+  };
+
+  // Show debug info
+
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -87,6 +128,7 @@ function ManageRequests({ adminName = "Admin" }) {
               Pet Adoption Requests
             </Typography.Title>
           </Card>
+
 
           <Tabs
             activeKey={activeTab}
@@ -101,15 +143,11 @@ function ManageRequests({ adminName = "Admin" }) {
 
           <Card>
             {loading ? (
-              <Spin tip="Loading requests..." />
+              <div style={{ textAlign: "center", padding: "20px" }}>
+                <Spin tip="Loading requests..." />
+              </div>
             ) : (
-              <Table
-                dataSource={Array.isArray(filteredData) ? filteredData : []}
-                columns={columns}
-                rowKey="id"
-                pagination={false}
-                bordered
-              />
+              renderSimpleTable()
             )}
           </Card>
         </div>
