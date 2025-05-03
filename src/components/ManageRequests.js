@@ -248,7 +248,7 @@ function ManageRequests({ adminName = "Admin" }) {
                       <Typography.Title level={5}>
                         Adopter Information ℹ️
                       </Typography.Title>
-                      <Descriptions bordered column={1} >
+                      <Descriptions bordered column={1}>
                         <Descriptions.Item label="Name">
                           {selectedRequest.name}
                         </Descriptions.Item>

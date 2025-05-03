@@ -54,35 +54,20 @@ const PetFound = ({ adminName }) => {
   }, []);
 
   const filteredData = reportData.filter((report) => {
-    if (activeTab === "All") return report.status === "Stray";
+    if (activeTab === "All") return report.report_type === "Stray";
     if (activeTab === "In Progress" || activeTab === "Resolved") {
       return report.status === activeTab && report.report_type === "Stray";
     }
     return false;
   });
 
-  const strayCount = reportData.filter((r) => r.status === "Stray").length;
+  const strayCount = reportData.filter((r) => r.report_type === "Stray").length;
   const inProgressCount = reportData.filter(
     (r) => r.status === "In Progress" && r.report_type === "Stray"
   ).length;
   const resolvedCount = reportData.filter(
     (r) => r.status === "Resolved" && r.report_type === "Stray"
   ).length;
-
-  const handleMarkResolved = async (id) => {
-    try {
-      const reportRef = doc(db, "reports", id);
-      await updateDoc(reportRef, {
-        status: "Resolved",
-      });
-      message.success("Report marked as Resolved");
-      fetchReports();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      message.error("Failed to update status");
-    }
-  };
-
   const columns = [
     {
       title: "Name",
@@ -129,7 +114,7 @@ const PetFound = ({ adminName }) => {
 
         const color = colorMap[text] || colorMap.default;
 
-        return <Tag color={color}>{text}</Tag>;
+        return <Tag color={color}>{text || "For Rescue"}</Tag>;
       },
     },
 
@@ -159,7 +144,7 @@ const PetFound = ({ adminName }) => {
           type="primary"
           onClick={() => {
             setSelectedReport(record);
-            setUpdatedStatus(record.status); // sync dropdown with actual status
+            setUpdatedStatus(record.status);
             setIsModalVisible(true);
           }}
         >
@@ -231,6 +216,7 @@ const PetFound = ({ adminName }) => {
                     value={updatedStatus}
                     onChange={(value) => setUpdatedStatus(value)}
                     style={{ width: 160 }}
+                    placeholder="Select Status to Update"
                   >
                     <Option value="In Progress">In Progress</Option>
                     <Option value="Resolved">Resolved</Option>

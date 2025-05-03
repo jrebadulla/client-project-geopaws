@@ -54,14 +54,17 @@ const PetLost = ({ adminName }) => {
   }, []);
 
   const filteredData = reportData.filter((report) => {
-    if (activeTab === "All") return report.status === "Missing";
+    if (activeTab === "Missing") return report.report_type === "Missing";
     if (activeTab === "In Progress" || activeTab === "Resolved") {
       return report.status === activeTab && report.report_type === "Missing";
     }
     return false;
   });
 
-  const missingCount = reportData.filter((r) => r.status === "Missing").length;
+  const missingCount = reportData.filter(
+    (r) => r.report_type === "Missing"
+  ).length;
+
   const inProgressCount = reportData.filter(
     (r) => r.status === "In Progress" && r.report_type === "Missing"
   ).length;
@@ -115,7 +118,7 @@ const PetLost = ({ adminName }) => {
 
         const color = colorMap[text] || colorMap.default;
 
-        return <Tag color={color}>{text}</Tag>;
+        return <Tag color={color}>{text || "For Rescue"}</Tag>;
       },
     },
 
@@ -177,7 +180,7 @@ const PetLost = ({ adminName }) => {
             onChange={(key) => setActiveTab(key)}
             centered
           >
-            <TabPane tab={`Missing (${missingCount})`} key="All" />
+            <TabPane tab={`Missing (${missingCount})`} key="Missing" />
             <TabPane
               tab={`In Progress (${inProgressCount})`}
               key="In Progress"
@@ -217,6 +220,7 @@ const PetLost = ({ adminName }) => {
                     value={updatedStatus}
                     onChange={(value) => setUpdatedStatus(value)}
                     style={{ width: 160 }}
+                    placeholder="Select Status to Update"
                   >
                     <Option value="In Progress">In Progress</Option>
                     <Option value="Resolved">Resolved</Option>

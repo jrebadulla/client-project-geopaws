@@ -53,7 +53,7 @@ const LandingPage = ({ adminName }) => {
 
   const [loading, setLoading] = useState(true);
   const [graphData, setGraphData] = useState([]);
-
+  const [adoptionStatusFilter, setAdoptionStatusFilter] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [tableData, setTableData] = useState([]);
   const [tableLoading, setTableLoading] = useState(false);
@@ -197,10 +197,87 @@ const LandingPage = ({ adminName }) => {
 
       const startX = (pageWidth - totalHeaderWidth) / 2;
       const logoY = 12 + (textHeight - logoHeight) / 2;
-
       const textX = startX + logoWidth + 10;
       const titleY = logoY + textHeight + 10;
 
+      // Special case for ADOPTION LIST
+      if (selectedCategory === "pendingRequests") {
+        const autoTableColumns = [
+          { header: "No.", dataKey: "no" },
+          { header: "Adopter Name", dataKey: "name" },
+          { header: "Animal Type", dataKey: "pettype" },
+          { header: "Breed", dataKey: "breed" },
+          { header: "Color", dataKey: "color" },
+          { header: "Date of Adopted", dataKey: "timestamp" },
+          { header: "Email", dataKey: "email" },
+          { header: "Status", dataKey: "status" },
+        ];
+
+        const dataToPrint = tableData.map((item, index) => ({
+          no: index + 1,
+          name: item.name || item.fullname || "N/A",
+          pettype: item.pettype || "N/A",
+          breed: item.breed || "N/A",
+          color: item.color || "N/A",
+          timestamp:
+            item.timestamp && item.timestamp.toDate
+              ? item.timestamp.toDate().toLocaleString()
+              : "N/A",
+          email: item.email || "N/A",
+          status: item.status || "N/A",
+        }));
+
+        autoTable(doc, {
+          startY: titleY + 10,
+          columns: autoTableColumns,
+          body: dataToPrint,
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [91, 155, 213] },
+          margin: { top: 70, left: 14, right: 14 },
+          theme: "grid",
+          didDrawPage: () => {
+            doc.addImage(logo, "PNG", startX, logoY, logoWidth, logoHeight);
+            headerLines.forEach((line, i) => {
+              const y = logoY + i * lineHeight;
+              doc.setFont(
+                undefined,
+                [
+                  "BARANGAY GOVERNMENT OF PACITA",
+                  "OFFICE OF THE PUNONG BARANGAY",
+                ].includes(line)
+                  ? "bold"
+                  : "normal"
+              );
+              doc.setFontSize(11);
+              doc.text(line, textX, y);
+            });
+            doc.setFontSize(16);
+            doc.setFont(undefined, "bold");
+            doc.text("ADOPTION LIST", pageWidth / 2, titleY, {
+              align: "center",
+            });
+            doc.setFontSize(12);
+            doc.text(
+              `Date: ${new Date().toLocaleDateString()}`,
+              pageWidth - 44,
+              titleY
+            );
+          },
+        });
+
+        const baseY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(12);
+        doc.setFont(undefined, "bold");
+        doc.text("Prepared by:", 30, baseY);
+        doc.setFont(undefined, "normal");
+        doc.text("Rowena Que", 60, baseY + 7);
+        doc.text("Barangay Admin", 57, baseY + 14);
+
+        window.open(doc.output("bloburl"), "_blank");
+        return;
+      }
+
+      // Default for other categories
       const originalColumns = getColumns(selectedCategory).filter(
         (col) => !["image", "images"].includes(col.dataIndex)
       );
@@ -262,6 +339,7 @@ const LandingPage = ({ adminName }) => {
               doc.setFontSize(11);
               doc.text(line, textX, y);
             });
+
             doc.setFontSize(16);
             doc.setFont(undefined, "bold");
             let pdfTitle = getModalTitle(selectedCategory);
@@ -276,7 +354,6 @@ const LandingPage = ({ adminName }) => {
               const reportTypes = [
                 ...new Set(filteredTableData.map((item) => item.report_type)),
               ];
-
               if (reportTypes.length === 1) {
                 if (reportTypes[0] === "Stray") {
                   pdfTitle = "PET FOUND LIST";
@@ -302,17 +379,12 @@ const LandingPage = ({ adminName }) => {
 
         if (index === chunkedData.length - 1) {
           const baseY = doc.lastAutoTable.finalY + 20;
-          const marginLeft = 30;
-          const rowenaLeft = marginLeft + 30;
-          const titleLeft = marginLeft + 27;
-
           doc.setFontSize(12);
           doc.setFont(undefined, "bold");
-          doc.text("Prepared by:", marginLeft, baseY);
-
+          doc.text("Prepared by:", 30, baseY);
           doc.setFont(undefined, "normal");
-          doc.text("Rowena Que", rowenaLeft, baseY + 7);
-          doc.text("Barangay Admin", titleLeft, baseY + 14);
+          doc.text("Rowena Que", 60, baseY + 7);
+          doc.text("Barangay Admin", 57, baseY + 14);
         }
       });
 
@@ -435,7 +507,7 @@ const LandingPage = ({ adminName }) => {
       case "resolvedReports":
         return "Stray Animal Reports Details";
       case "pendingRequests":
-        return "LIST OF AVAILABLE PETS";
+        return "ADOPTION LIST";
       default:
         return "Details";
     }
@@ -480,6 +552,18 @@ const LandingPage = ({ adminName }) => {
   }, []);
 
   const COLORS = ["#1890ff", "#13c2c2", "#fa8c16", "#f759ab", "#9254de"];
+
+  const tableHeaderStyle = {
+    padding: "12px 16px",
+    backgroundColor: "#fafafa",
+    borderBottom: "1px solid #f0f0f0",
+    textAlign: "left",
+  };
+
+  const tableCellStyle = {
+    padding: "12px 16px",
+    borderBottom: "1px solid #f0f0f0",
+  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -798,21 +882,66 @@ const LandingPage = ({ adminName }) => {
               overflowY: "auto",
             }}
           >
-            <Table
-              dataSource={
-                selectedCategory === "pendingReports" ||
-                selectedCategory === "closedReports"
-                  ? filteredTableData
-                  : tableData
-              }
-              columns={getColumns(selectedCategory)}
-              rowKey={(record) => record.id || record.uid}
-              loading={tableLoading}
-              pagination={false}
-              onChange={(pagination, filters, sorter, extra) => {
-                setFilteredTableData(extra.currentDataSource);
-              }}
-            />
+            {selectedCategory === "pendingRequests" ? (
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    marginBottom: "20px",
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th style={tableHeaderStyle}>Adopter name</th>
+                      <th style={tableHeaderStyle}>Animal type </th>
+                      <th style={tableHeaderStyle}>Breed </th>
+                      <th style={tableHeaderStyle}>Color</th>
+                      <th style={tableHeaderStyle}>Date of Adopted</th>
+                      <th style={tableHeaderStyle}>Email</th>
+                      <th style={tableHeaderStyle}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableData.map((item, index) => (
+                      <tr key={item.id || index}>
+                        <td style={tableCellStyle}>
+                          {item.name || item.fullname}
+                        </td>
+                        <td style={tableCellStyle}>{item.pettype}</td>
+                        <td style={tableCellStyle}>{item.breed}</td>
+                        <td style={tableCellStyle}>{item.color}</td>
+                        <td style={tableCellStyle}>{item.email}</td>
+                        <td style={tableCellStyle}>
+                          {item.timestamp && item.timestamp.toDate
+                            ? item.timestamp.toDate().toLocaleString()
+                            : "N/A"}
+                        </td>
+
+                        <td style={tableCellStyle}>{item.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <Table
+                dataSource={
+                  selectedCategory === "pendingReports" ||
+                  selectedCategory === "closedReports"
+                    ? filteredTableData
+                    : tableData
+                }
+                columns={getColumns(selectedCategory)}
+                rowKey={(record) => record.id || record.uid}
+                loading={tableLoading}
+                pagination={false}
+                onChange={(pagination, filters, sorter, extra) => {
+                  setFilteredTableData(extra.currentDataSource);
+                }}
+              />
+            )}
+
             <Button
               type="primary"
               size="large"
