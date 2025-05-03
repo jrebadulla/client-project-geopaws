@@ -25,7 +25,7 @@ const Reports = () => {
 
   // Fetch reports from Firestore
   const fetchReports = async () => {
-    const reportsCollection = collection(db, 'pet_reports');
+    const reportsCollection = collection(db, 'reports');
     const reportsSnapshot = await getDocs(reportsCollection);
     const reportsList = await Promise.all(reportsSnapshot.docs.map(async (doc) => {
       const report = doc.data();

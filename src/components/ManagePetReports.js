@@ -29,7 +29,7 @@ const ManagePetReports = ({ adminName }) => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const reportsCollection = collection(db, "pet_reports");
+        const reportsCollection = collection(db, "reports");
         const reportsSnapshot = await getDocs(reportsCollection);
         const reportsList = reportsSnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -65,7 +65,7 @@ const ManagePetReports = ({ adminName }) => {
   // Handle Delete Report
   const handleDelete = async (reportId) => {
     try {
-      await deleteDoc(doc(db, "pet_reports", reportId));
+      await deleteDoc(doc(db, "reports", reportId));
       const updatedReports = reports.filter((report) => report.id !== reportId);
       setReports(updatedReports);
       setFilteredReports(updatedReports);
