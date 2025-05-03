@@ -8,6 +8,7 @@ import {
   MessageOutlined,
   UserOutlined,
   NotificationOutlined,
+  AlertOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./SideBar.css";
@@ -26,6 +27,8 @@ const Sidebar = () => {
     "/messages": "6",
     "/feedback": "7",
     "/users": "8",
+    "/pet-lost": "9",
+    "/pet-found": "10",
   };
 
   const [collapsed, setCollapsed] = useState(false);
@@ -95,13 +98,27 @@ const Sidebar = () => {
           Adoption Request
         </Menu.Item>
 
-        <Menu.Item
-          key="4"
+        <Menu.SubMenu
+          key="pet-reports"
           icon={<FormOutlined />}
-          onClick={() => handleNavigate("/pet-reports", "4")}
+          title="Pet Rescue"
         >
-          Pet Reports
-        </Menu.Item>
+          <Menu.Item
+            key="pet-lost"
+            icon={<AlertOutlined />}
+            onClick={() => handleNavigate("/pet-lost", "pet-lost")}
+          >
+            Pet Lost
+          </Menu.Item>
+
+          <Menu.Item
+            key="pet-found"
+            icon={<FormOutlined />}
+            onClick={() => handleNavigate("/pet-found", "pet-found")}
+          >
+            Pet Found
+          </Menu.Item>
+        </Menu.SubMenu>
 
         <Menu.Item
           key="6"

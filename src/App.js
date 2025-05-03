@@ -16,6 +16,8 @@ import ManageRequests from "./components/ManageRequests";
 import ManageUsers from "./components/ManageUsers";
 import ManageMessages from "./components/Messages";
 import IncidentDetails from "./components/IncidentDetails";
+import PetLost from "./components/PetRescue/PetLost";
+import PetFound from "./components/PetRescue/PetFound";
 
 // Wrapper component to enforce authentication
 const ProtectedRoute = ({ isAuthenticated, isLoadingAuth, children }) => {
@@ -181,6 +183,30 @@ function App() {
                 isLoadingAuth={isLoadingAuth}
               >
                 <Reports adminUid={adminUid} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/pet-lost"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
+                <PetLost adminUid={adminUid} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/pet-found"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                isLoadingAuth={isLoadingAuth}
+              >
+                <PetFound adminUid={adminUid} />
               </ProtectedRoute>
             }
           />

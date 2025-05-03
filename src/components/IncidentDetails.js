@@ -48,7 +48,7 @@ const IncidentDetails = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const reportRef = doc(db, "pet_reports", id);
+        const reportRef = doc(db, "reports", id);
         const reportSnap = await getDoc(reportRef);
 
         if (reportSnap.exists()) {
@@ -81,7 +81,7 @@ const IncidentDetails = () => {
     }
 
     try {
-      const reportRef = doc(db, "pet_reports", id);
+      const reportRef = doc(db, "reports", id);
 
       await updateDoc(reportRef, {
         status,
