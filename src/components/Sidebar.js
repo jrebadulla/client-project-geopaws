@@ -76,15 +76,18 @@ const Sidebar = () => {
       >
         <Menu.Item
           key="1"
-          icon={<HomeOutlined />}
+          icon={
+            <img src="/dashboard.png" alt="Pets" style={{ width: 20, height: 20 }} />
+          }
           onClick={() => handleNavigate("/", "1")}
         >
-          Home
+          Dashboard
         </Menu.Item>
-
         <Menu.Item
           key="3"
-          icon={<SettingOutlined />}
+          icon={
+            <img src="/pets.png" alt="Pets" style={{ width: 20, height: 20 }} />
+          }
           onClick={() => handleNavigate("/manage-pets", "3")}
         >
           Manage Pets
@@ -92,7 +95,9 @@ const Sidebar = () => {
 
         <Menu.Item
           key="5"
-          icon={<MailOutlined />}
+          icon={
+            <img src="/request.png" alt="Pets" style={{ width: 20, height: 20 }} />
+          }
           onClick={() => handleNavigate("/requests", "5")}
         >
           Adoption Request
@@ -100,12 +105,16 @@ const Sidebar = () => {
 
         <Menu.SubMenu
           key="pet-reports"
-          icon={<FormOutlined />}
+          icon={
+            <img src="/veterinary.png" alt="Veterinary" style={{ width: 20, height: 20 }} />
+          }
           title="Pet Rescue"
         >
           <Menu.Item
             key="pet-lost"
-            icon={<AlertOutlined />}
+            icon={
+              <img src="/finding.png" alt="Pets" style={{ width: 20, height: 20 }} />
+            }
             onClick={() => handleNavigate("/pet-lost", "pet-lost")}
           >
             Pet Lost
@@ -113,7 +122,9 @@ const Sidebar = () => {
 
           <Menu.Item
             key="pet-found"
-            icon={<FormOutlined />}
+            icon={
+              <img src="/paw-print.png" alt="Pets" style={{ width: 20, height: 20 }} />
+            }
             onClick={() => handleNavigate("/pet-found", "pet-found")}
           >
             Pet Found
@@ -122,7 +133,9 @@ const Sidebar = () => {
 
         <Menu.Item
           key="6"
-          icon={<MessageOutlined />}
+          icon={
+            <img src="/message.png" alt="Pets" style={{ width: 20, height: 20 }} />
+          }
           onClick={() => handleNavigate("/messages", "6")}
         >
           Messages
@@ -130,7 +143,9 @@ const Sidebar = () => {
 
         <Menu.Item
           key="7"
-          icon={<NotificationOutlined />}
+          icon={
+            <img src="/feedback.png" alt="Pets" style={{ width: 20, height: 20 }} />
+          }
           onClick={() => handleNavigate("/feedback", "7")}
         >
           Feedback
@@ -138,7 +153,9 @@ const Sidebar = () => {
 
         <Menu.Item
           key="8"
-          icon={<UserOutlined />}
+          icon={
+            <img src="/group.png" alt="Pets" style={{ width: 20, height: 20 }} />
+          }
           onClick={() => handleNavigate("/users", "8")}
         >
           Users
