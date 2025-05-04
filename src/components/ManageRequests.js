@@ -259,7 +259,7 @@ function ManageRequests({ adminName = "Admin" }) {
                   )}
 
                   {selectedRequest ? (
-                    <div style={{ maxHeight: "65vh", overflowY: "auto" }}>
+                    <div >
                       <Typography.Title level={5}>
                         Adopter Information ℹ️
                       </Typography.Title>
