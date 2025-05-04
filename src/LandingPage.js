@@ -467,8 +467,8 @@ const LandingPage = ({ adminName }) => {
         },
         {
           title: "Reported By",
-          dataIndex: "fullName",
-          key: "fullName",
+          dataIndex: "name",
+          key: "name",
         },
         { title: "Email", dataIndex: "email", key: "email" },
         {
