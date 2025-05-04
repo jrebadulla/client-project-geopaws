@@ -269,9 +269,16 @@ const LandingPage = ({ adminName }) => {
             });
             doc.setFontSize(16);
             doc.setFont(undefined, "bold");
-            doc.text("ADOPTION LIST", pageWidth / 2, titleY, {
+            let pdfTitle = "ADOPTION LIST";
+            if (adoptionStatusFilter === "Approved") {
+              pdfTitle = "ADOPTION LIST - APPROVED";
+            } else if (adoptionStatusFilter === "Disapprove") {
+              pdfTitle = "ADOPTION LIST - DISAPPROVE";
+            }
+            doc.text(pdfTitle, pageWidth / 2, titleY, {
               align: "center",
             });
+
             doc.setFontSize(12);
             doc.text(
               `Date: ${new Date().toLocaleDateString()}`,
