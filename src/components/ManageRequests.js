@@ -173,6 +173,7 @@ function ManageRequests({ adminName = "Admin" }) {
                   footer={[
                     <Button
                       key="disapprove"
+                      type="primary"
                       danger
                       onClick={() => {
                         Modal.confirm({
@@ -188,12 +189,16 @@ function ManageRequests({ adminName = "Admin" }) {
                           ),
                           okText: "Yes, Disapprove",
                           okType: "danger",
+                          okButtonProps: {
+                            type: "primary",
+                            danger: true,
+                          },
                           cancelText: "Cancel",
                           onOk: () => {
                             handleStatusChange(
                               selectedRequest.id,
                               "Disapprove",
-                              selectedRequest.petId 
+                              selectedRequest.petId
                             );
                             setIsModalOpen(false);
                           },
@@ -259,7 +264,7 @@ function ManageRequests({ adminName = "Admin" }) {
                   )}
 
                   {selectedRequest ? (
-                    <div >
+                    <div>
                       <Typography.Title level={5}>
                         Adopter Information ℹ️
                       </Typography.Title>
