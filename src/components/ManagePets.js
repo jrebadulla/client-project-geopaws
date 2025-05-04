@@ -267,7 +267,7 @@ const ManagePets = ({ adminName }) => {
               </Col>
               <Col xs={24} sm={8}>
                 <Search
-                  placeholder="Search by Type"
+                  placeholder="Search pet here..."
                   allowClear
                   value={searchType}
                   onChange={(e) => handleSearchType(e.target.value)}

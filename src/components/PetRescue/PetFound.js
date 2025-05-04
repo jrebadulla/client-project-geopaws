@@ -301,6 +301,7 @@ const PetFound = ({ adminName }) => {
                   preview={true}
                 />
 
+                <Title level={5}>Reporter Information ℹ️</Title>
                 <Descriptions
                   column={1}
                   bordered

@@ -217,8 +217,6 @@ const LandingPage = ({ adminName }) => {
           { header: "No.", dataKey: "no" },
           { header: "Adopter Name", dataKey: "name" },
           { header: "Animal Type", dataKey: "pettype" },
-          { header: "Breed", dataKey: "breed" },
-          { header: "Color", dataKey: "color" },
           { header: "Date of Adopted", dataKey: "timestamp" },
           { header: "Email", dataKey: "email" },
           { header: "Status", dataKey: "status" },
@@ -453,14 +451,20 @@ const LandingPage = ({ adminName }) => {
           title: "Animal Type",
           dataIndex: "typeOfAnimal",
           key: "typeOfAnimal",
+          render: (type) =>
+            type && typeof type === "object"
+              ? Object.entries(type)
+                  .filter(([_, value]) => value === true)
+                  .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
+                  .join(", ")
+              : "N/A",
         },
+
         {
           title: "Breed",
           dataIndex: "description",
           key: "description",
         },
-        { title: "Sex", dataIndex: "sex", key: "sex" },
-        { title: "Color", dataIndex: "color", key: "color" },
         {
           title: "Reported By",
           dataIndex: "fullName",
@@ -953,8 +957,7 @@ const LandingPage = ({ adminName }) => {
                     <tr>
                       <th style={tableHeaderStyle}>Adopter name</th>
                       <th style={tableHeaderStyle}>Animal type</th>
-                      <th style={tableHeaderStyle}>Breed</th>
-                      <th style={tableHeaderStyle}>Color</th>
+
                       <th style={tableHeaderStyle}>Date of Adopted</th>
                       <th style={tableHeaderStyle}>Email</th>
                       <th style={tableHeaderStyle}>Status</th>
@@ -968,8 +971,7 @@ const LandingPage = ({ adminName }) => {
                             {item.name || item.fullname}
                           </td>
                           <td style={tableCellStyle}>{item.pettype}</td>
-                          <td style={tableCellStyle}>{item.breed}</td>
-                          <td style={tableCellStyle}>{item.color}</td>
+
                           <td style={tableCellStyle}>
                             {item.timestamp && item.timestamp.toDate
                               ? item.timestamp.toDate().toLocaleString()
