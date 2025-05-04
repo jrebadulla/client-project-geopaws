@@ -19,7 +19,7 @@ import HeaderBar from "./HeaderBar";
 
 const STATUS_BADGE = {
   Approved: "success",
-  Disapprove: "error",
+  Disapproved: "error",
   Pending: "processing",
 };
 
@@ -38,7 +38,7 @@ function ManageRequests({ adminName = "Admin" }) {
     (r) => r.status === "Approved"
   ).length;
   const disapproveCount = requestData.filter(
-    (r) => r.status === "Disapprove"
+    (r) => r.status === "Disapproved"
   ).length;
 
   const fetchRequests = async () => {
@@ -110,7 +110,7 @@ function ManageRequests({ adminName = "Admin" }) {
 
         if (newStatus === "Approved") {
           await updateDoc(petRef, { status: "Adopted" });
-        } else if (newStatus === "Disapprove") {
+        } else if (newStatus === "Disapproved") {
           await updateDoc(petRef, { status: "Available" });
         }
       }
@@ -157,7 +157,7 @@ function ManageRequests({ adminName = "Admin" }) {
                     color={
                       item.status === "Approved"
                         ? "green"
-                        : item.status === "Disapprove"
+                        : item.status === "Disapproved"
                         ? "red"
                         : "gold"
                     }
@@ -216,7 +216,7 @@ function ManageRequests({ adminName = "Admin" }) {
                           onOk: () => {
                             handleStatusChange(
                               selectedRequest.id,
-                              "Disapprove",
+                              "Disapproved",
                               selectedRequest.petId
                             );
                             setIsModalOpen(false);
@@ -485,7 +485,7 @@ function ManageRequests({ adminName = "Admin" }) {
             items={[
               { key: "Pending", label: `Pending (${pendingCount})` },
               { key: "Approved", label: `Approved (${approvedCount})` },
-              { key: "Disapprove", label: `Disapprove (${disapproveCount})` },
+              { key: "Disapproved", label: `Disapproved (${disapproveCount})` },
             ]}
           />
 

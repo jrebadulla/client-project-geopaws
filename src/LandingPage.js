@@ -318,12 +318,21 @@ const LandingPage = ({ adminName }) => {
         const row = { no: index + 1 };
         originalColumns.forEach((col) => {
           const value = item[col.dataIndex];
-          row[col.dataIndex] =
-            value !== undefined && value !== null
-              ? Array.isArray(value)
-                ? value.join(", ")
-                : value
-              : "";
+          if (col.dataIndex === "typeOfAnimal" && typeof value === "object") {
+            row[col.dataIndex] = Object.entries(value)
+              .filter(([_, val]) => val === true)
+              .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
+              .join(", ");
+          } else if (col.dataIndex === "submittedAt" && value?.toDate) {
+            row[col.dataIndex] = value.toDate().toLocaleString();
+          } else {
+            row[col.dataIndex] =
+              value !== undefined && value !== null
+                ? Array.isArray(value)
+                  ? value.join(", ")
+                  : value
+                : "";
+          }
         });
         return row;
       });
