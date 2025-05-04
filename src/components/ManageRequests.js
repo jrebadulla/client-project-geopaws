@@ -299,13 +299,14 @@ function ManageRequests({ adminName = "Admin" }) {
                           {selectedRequest.pet_color}
                         </Descriptions.Item>
                         <Descriptions.Item label="Arrival date">
-                          {new Date(
-                            petDetails.arrivaldate
-                          ).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
+                          {new Date(petDetails.arrivaldate).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )}
                         </Descriptions.Item>
                       </Descriptions>
                       <Typography.Title level={5}>
@@ -387,7 +388,7 @@ function ManageRequests({ adminName = "Admin" }) {
                           {selectedRequest.age}
                         </Descriptions.Item>
                         <Descriptions.Item label="Preferred size">
-                          {selectedRequest.size}
+                          {selectedRequest.pet_size}
                         </Descriptions.Item>
                         <Descriptions.Item label="Financial Responsibility">
                           {selectedRequest.financialresponsibility}
