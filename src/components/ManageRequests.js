@@ -87,11 +87,16 @@ function ManageRequests({ adminName = "Admin" }) {
       const requestRef = doc(db, "request_form", id);
       await updateDoc(requestRef, { status: newStatus });
 
-      if (newStatus === "Approved" && petId) {
+      if (petId) {
         const petRef = doc(db, "pet", petId);
 
-        await updateDoc(petRef, { status: "Adopted" });
+        if (newStatus === "Approved") {
+          await updateDoc(petRef, { status: "Adopted" });
+        } else if (newStatus === "Disapprove") {
+          await updateDoc(petRef, { status: "Available" });
+        }
       }
+
       message.success(`Request ${newStatus.toLowerCase()} successfully.`);
       fetchRequests();
     } catch (error) {
@@ -187,7 +192,8 @@ function ManageRequests({ adminName = "Admin" }) {
                           onOk: () => {
                             handleStatusChange(
                               selectedRequest.id,
-                              "Disapprove"
+                              "Disapprove",
+                              selectedRequest.petId 
                             );
                             setIsModalOpen(false);
                           },
