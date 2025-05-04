@@ -29,6 +29,7 @@ const Sidebar = () => {
     "/users": "8",
     "/pet-lost": "9",
     "/pet-found": "10",
+    "/pet-rescue": "10",
   };
 
   const [collapsed, setCollapsed] = useState(false);
@@ -104,7 +105,7 @@ const Sidebar = () => {
         </Menu.Item>
 
         <Menu.SubMenu
-          key="pet-reports"
+          key="pet-rescue"
           icon={
             <img src="/veterinary.png" alt="Veterinary" style={{ width: 20, height: 20 }} />
           }
