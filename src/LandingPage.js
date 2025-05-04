@@ -72,10 +72,13 @@ const LandingPage = ({ adminName }) => {
     try {
       if (category === "users") {
         const usersSnapshot = await getDocs(collection(db, "users"));
-        const usersData = usersSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const usersData = usersSnapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter((user) => user.type !== "admin");
+
         setTableData(usersData);
       } else if (category === "pendingReports") {
         const adoptionPetsSnapshot = await getDocs(collection(db, "pet"));
@@ -529,6 +532,10 @@ const LandingPage = ({ adminName }) => {
   const fetchData = async () => {
     try {
       const usersSnapshot = await getDocs(collection(db, "users"));
+      const userDocs = usersSnapshot.docs
+        .map((doc) => doc.data())
+        .filter((user) => user.type !== "admin");
+
       const availablePetsSnapshot = await getDocs(collection(db, "pet"));
       const reportsResolvedSnapshot = await getDocs(
         query(collection(db, "reports"), where("status", "==", "Resolved"))
@@ -539,7 +546,7 @@ const LandingPage = ({ adminName }) => {
       );
 
       setDataSummary({
-        usersCount: usersSnapshot.size,
+        usersCount: userDocs.length,
         reportsPending: availablePetsSnapshot.size,
         reportsResolved: reportsResolvedSnapshot.size,
         reportsClosed: allReportsSnapshot.size,
@@ -547,7 +554,7 @@ const LandingPage = ({ adminName }) => {
       });
 
       setGraphData([
-        { name: "Users", count: usersSnapshot.size || 0 },
+        { name: "Users", count: userDocs.length },
         { name: "Adoption", count: availablePetsSnapshot.size || 0 },
         { name: "Resolved Reports", count: reportsResolvedSnapshot.size || 0 },
         { name: "Pet Rescue", count: allReportsSnapshot.size || 0 },
