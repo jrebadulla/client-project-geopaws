@@ -30,7 +30,7 @@ const PetLost = ({ adminName }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [updatedStatus, setUpdatedStatus] = useState("In Progress");
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState("Missing");
 
   const fetchReports = async () => {
     try {
@@ -54,7 +54,13 @@ const PetLost = ({ adminName }) => {
   }, []);
 
   const filteredData = reportData.filter((report) => {
-    if (activeTab === "Missing") return report.report_type === "Missing";
+    if (activeTab === "Missing")
+      return (
+        report.report_type === "Missing" &&
+        report.status !== "In Progress" &&
+        report.status !== "Resolved"
+      );
+
     if (activeTab === "In Progress" || activeTab === "Resolved") {
       return report.status === activeTab && report.report_type === "Missing";
     }
@@ -62,7 +68,10 @@ const PetLost = ({ adminName }) => {
   });
 
   const missingCount = reportData.filter(
-    (r) => r.report_type === "Missing"
+    (r) =>
+      r.report_type === "Missing" &&
+      r.status !== "In Progress" &&
+      r.status !== "Resolved"
   ).length;
 
   const inProgressCount = reportData.filter(
@@ -148,7 +157,7 @@ const PetLost = ({ adminName }) => {
           type="primary"
           onClick={() => {
             setSelectedReport(record);
-            setUpdatedStatus(record.status); // sync dropdown with actual status
+            setUpdatedStatus(record.status);
             setIsModalVisible(true);
           }}
         >

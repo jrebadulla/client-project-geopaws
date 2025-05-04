@@ -61,6 +61,7 @@ const LandingPage = ({ adminName }) => {
   const [filteredTableData, setFilteredTableData] = useState([]);
   const [concernFilters, setConcernFilters] = useState([]);
   const [petStatusFilter, setPetStatusFilter] = useState(null);
+  const [adoptionStatusOptions, setAdoptionStatusOptions] = useState([]);
 
   const handleCardClick = async (category) => {
     setSelectedCategory(category);
@@ -130,6 +131,13 @@ const LandingPage = ({ adminName }) => {
           ...doc.data(),
         }));
         setTableData(requestsPendingData);
+        setFilteredTableData(requestsPendingData);
+
+        // Dynamically extract status values
+        const uniqueStatuses = Array.from(
+          new Set(requestsPendingData.map((item) => item.status))
+        ).filter(Boolean);
+        setAdoptionStatusOptions(uniqueStatuses); // Store this in state
       } else if (category === "closedReports") {
         const petReportsSnapshot = await getDocs(
           query(collection(db, "reports"), where("status", "==", "Closed"))
@@ -213,7 +221,12 @@ const LandingPage = ({ adminName }) => {
           { header: "Status", dataKey: "status" },
         ];
 
-        const dataToPrint = tableData.map((item, index) => ({
+        const rawData =
+          adoptionStatusFilter && filteredTableData.length > 0
+            ? filteredTableData
+            : tableData;
+
+        const dataToPrint = rawData.map((item, index) => ({
           no: index + 1,
           name: item.name || item.fullname || "N/A",
           pettype: item.pettype || "N/A",
@@ -868,6 +881,37 @@ const LandingPage = ({ adminName }) => {
                     </Button>
                   </Dropdown>
                 </div>
+              ) : selectedCategory === "pendingRequests" ? (
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                >
+                  <span style={{ fontWeight: "bold", fontSize: 16 }}>
+                    ADOPTION LIST
+                  </span>
+                  <Dropdown
+                    overlay={
+                      <Menu
+                        onClick={({ key }) => {
+                          setAdoptionStatusFilter(key === "all" ? null : key);
+                          const filtered =
+                            key === "all"
+                              ? tableData
+                              : tableData.filter((item) => item.status === key);
+                          setFilteredTableData(filtered);
+                        }}
+                      >
+                        <Menu.Item key="all">All Status</Menu.Item>
+                        {adoptionStatusOptions.map((status) => (
+                          <Menu.Item key={status}>{status}</Menu.Item>
+                        ))}
+                      </Menu>
+                    }
+                    placement="bottomLeft"
+                    trigger={["click"]}
+                  >
+                    <FilterOutlined />
+                  </Dropdown>
+                </div>
               ) : (
                 getModalTitle(selectedCategory)
               )
@@ -894,8 +938,8 @@ const LandingPage = ({ adminName }) => {
                   <thead>
                     <tr>
                       <th style={tableHeaderStyle}>Adopter name</th>
-                      <th style={tableHeaderStyle}>Animal type </th>
-                      <th style={tableHeaderStyle}>Breed </th>
+                      <th style={tableHeaderStyle}>Animal type</th>
+                      <th style={tableHeaderStyle}>Breed</th>
                       <th style={tableHeaderStyle}>Color</th>
                       <th style={tableHeaderStyle}>Date of Adopted</th>
                       <th style={tableHeaderStyle}>Email</th>
@@ -903,24 +947,25 @@ const LandingPage = ({ adminName }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {tableData.map((item, index) => (
-                      <tr key={item.id || index}>
-                        <td style={tableCellStyle}>
-                          {item.name || item.fullname}
-                        </td>
-                        <td style={tableCellStyle}>{item.pettype}</td>
-                        <td style={tableCellStyle}>{item.breed}</td>
-                        <td style={tableCellStyle}>{item.color}</td>
-                        <td style={tableCellStyle}>{item.email}</td>
-                        <td style={tableCellStyle}>
-                          {item.timestamp && item.timestamp.toDate
-                            ? item.timestamp.toDate().toLocaleString()
-                            : "N/A"}
-                        </td>
-
-                        <td style={tableCellStyle}>{item.status}</td>
-                      </tr>
-                    ))}
+                    {(adoptionStatusFilter ? filteredTableData : tableData).map(
+                      (item, index) => (
+                        <tr key={item.id || index}>
+                          <td style={tableCellStyle}>
+                            {item.name || item.fullname}
+                          </td>
+                          <td style={tableCellStyle}>{item.pettype}</td>
+                          <td style={tableCellStyle}>{item.breed}</td>
+                          <td style={tableCellStyle}>{item.color}</td>
+                          <td style={tableCellStyle}>
+                            {item.timestamp && item.timestamp.toDate
+                              ? item.timestamp.toDate().toLocaleString()
+                              : "N/A"}
+                          </td>
+                          <td style={tableCellStyle}>{item.email}</td>
+                          <td style={tableCellStyle}>{item.status}</td>
+                        </tr>
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>

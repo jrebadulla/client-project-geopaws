@@ -52,44 +52,49 @@ const HeaderBar = () => {
       where("receiver_uid", "==", adminUid),
       where("status", "==", "unread")
     );
+    const reportsQuery = collection(db, "reports");
 
-    const petReportsQuery = query(
-      collection(db, "pet_reports"),
-      where("status", "==", "In Progress")
-    );
+    const unsubscribeReports = onSnapshot(reportsQuery, (snapshot) => {
+      const reportNotifications = snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
 
-    const unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
-      const messageNotifications = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        type: "message",
-        timestamp: doc.data().timestamp?.toDate() || new Date(),
-        text: "New message has been received",
-      }));
+          // Exclude "In Progress" and "Resolved"
+          if (data.status === "In Progress" || data.status === "Resolved") {
+            return null;
+          }
+
+          let link = null;
+          if (data.report_type === "Missing") {
+            link = "/pet-lost";
+          } else if (data.report_type === "Stray") {
+            link = "/pet-found";
+          }
+
+          return {
+            id: doc.id,
+            type: "pet_report",
+            timestamp: data.updatedAt?.toDate() || new Date(),
+            text:
+              data.report_type === "Stray"
+                ? "New Pet Found report received"
+                : data.report_type === "Missing"
+                ? "New Pet Lost report received"
+                : "New pet report received",
+
+            link,
+          };
+        })
+        .filter(Boolean); // Remove null entries
 
       setNotifications((prev) => [
-        ...prev.filter((n) => n.type !== "message"), // Remove old message notifications
-        ...messageNotifications,
-      ]);
-    });
-
-    const unsubscribePetReports = onSnapshot(petReportsQuery, (snapshot) => {
-      const reportNotifications = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        type: "pet_report",
-        timestamp: doc.data().updatedAt?.toDate() || new Date(),
-        text: "New report has been received",
-        link: `/incident/${doc.id}`, // Add link to navigate
-      }));
-
-      setNotifications((prev) => [
-        ...prev.filter((n) => n.type !== "pet_report"), // Remove old pet report notifications
+        ...prev.filter((n) => n.type !== "pet_report"),
         ...reportNotifications,
       ]);
     });
 
     return () => {
-      unsubscribeMessages();
-      unsubscribePetReports();
+      unsubscribeReports();
     };
   }, [adminUid]);
 

@@ -30,7 +30,7 @@ const PetFound = ({ adminName }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [updatedStatus, setUpdatedStatus] = useState("In Progress");
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState("Stray");
 
   const fetchReports = async () => {
     try {
@@ -54,14 +54,26 @@ const PetFound = ({ adminName }) => {
   }, []);
 
   const filteredData = reportData.filter((report) => {
-    if (activeTab === "All") return report.report_type === "Stray";
+    if (activeTab === "Stray")
+      return (
+        report.report_type === "Stray" &&
+        report.status !== "In Progress" &&
+        report.status !== "Resolved"
+      );
+
     if (activeTab === "In Progress" || activeTab === "Resolved") {
       return report.status === activeTab && report.report_type === "Stray";
     }
     return false;
   });
 
-  const strayCount = reportData.filter((r) => r.report_type === "Stray").length;
+  const strayCount = reportData.filter(
+    (r) =>
+      r.report_type === "Stray" &&
+      r.status !== "In Progress" &&
+      r.status !== "Resolved"
+  ).length;
+
   const inProgressCount = reportData.filter(
     (r) => r.status === "In Progress" && r.report_type === "Stray"
   ).length;
@@ -176,7 +188,8 @@ const PetFound = ({ adminName }) => {
             onChange={(key) => setActiveTab(key)}
             centered
           >
-            <TabPane tab={`Stray (${strayCount})`} key="All" />
+            <TabPane tab={`Stray (${strayCount})`} key="Stray" />
+
             <TabPane
               tab={`In Progress (${inProgressCount})`}
               key="In Progress"
