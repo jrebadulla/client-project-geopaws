@@ -83,8 +83,8 @@ const PetFound = ({ adminName }) => {
   const columns = [
     {
       title: "Reported by",
-      dataIndex: "fullName",
-      key: "fullName",
+      dataIndex: "name",
+      key: "name",
     },
     {
       title: "Email",

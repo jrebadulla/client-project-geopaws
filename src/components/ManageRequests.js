@@ -278,36 +278,43 @@ function ManageRequests({ adminName = "Admin" }) {
                       </Typography.Title>
                       <Descriptions bordered column={1} size="small">
                         <Descriptions.Item label="Name">
-                          {petDetails.pet_name}
+                          {petDetails?.pet_name || "N/A"}
                         </Descriptions.Item>
+
                         <Descriptions.Item label="Type">
-                          {selectedRequest.pettype}
+                          {selectedRequest.pettype || "N/A"}
                         </Descriptions.Item>
                         <Descriptions.Item label="Breed">
-                          {selectedRequest.pet_breed}
+                          {selectedRequest.pet_breed || "N/A"}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Gender">
-                          {petDetails.sex}
-                        </Descriptions.Item>
+                        {petDetails && (
+                          <Descriptions.Item label="Gender">
+                            {petDetails.sex}
+                          </Descriptions.Item>
+                        )}
+
                         <Descriptions.Item label="Age">
-                          {selectedRequest.age}
+                          {selectedRequest.age || "N/A"}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Size">
-                          {petDetails.size}
-                        </Descriptions.Item>
+                        {petDetails && (
+                          <Descriptions.Item label="Size">
+                            {petDetails.size || "N/A"}
+                          </Descriptions.Item>
+                        )}
                         <Descriptions.Item label="Color">
-                          {selectedRequest.pet_color}
+                          {selectedRequest.pet_color || "N/A"}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Arrival date">
-                          {new Date(petDetails.arrivaldate).toLocaleDateString(
-                            "en-US",
-                            {
+                        {petDetails && (
+                          <Descriptions.Item label="Arrival date">
+                            {new Date(
+                              petDetails.arrivaldate
+                            ).toLocaleDateString("en-US", {
                               year: "numeric",
                               month: "long",
                               day: "numeric",
-                            }
-                          )}
-                        </Descriptions.Item>
+                            })}
+                          </Descriptions.Item>
+                        )}
                       </Descriptions>
                       <Typography.Title level={5}>
                         Adopter Information
