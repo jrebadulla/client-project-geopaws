@@ -82,15 +82,20 @@ function ManageRequests({ adminName = "Admin" }) {
     fetchRequests();
   }, []);
 
-  const handleStatusChange = async (id, newStatus) => {
+  const handleStatusChange = async (id, newStatus, petId) => {
     try {
       const requestRef = doc(db, "request_form", id);
       await updateDoc(requestRef, { status: newStatus });
+
+      if (newStatus === "Approved" && petId) {
+        const petRef = doc(db, "pet", petId);
+
+        await updateDoc(petRef, { status: "Adopted" });
+      }
       message.success(`Request ${newStatus.toLowerCase()} successfully.`);
       fetchRequests();
     } catch (error) {
-      console.error("Error updating status:", error);
-      message.error("Failed to update status.");
+      message.error(`Error: ${error.message}`);
     }
   };
 
@@ -210,7 +215,11 @@ function ManageRequests({ adminName = "Admin" }) {
                           okText: "Yes, Approve",
                           cancelText: "Cancel",
                           onOk: () => {
-                            handleStatusChange(selectedRequest.id, "Approved");
+                            handleStatusChange(
+                              selectedRequest.id,
+                              "Approved",
+                              selectedRequest.petId
+                            );
                             setIsModalOpen(false);
                           },
                         });
