@@ -248,7 +248,7 @@ const PetFound = ({ adminName }) => {
                             </p>
                             <p>
                               <strong>Reported by:</strong>{" "}
-                              {selectedReport?.fullName}
+                              {selectedReport?.name}
                             </p>
                             <p>
                               <strong>Location Found:</strong>{" "}
@@ -309,7 +309,7 @@ const PetFound = ({ adminName }) => {
                   labelStyle={{ fontWeight: 600 }}
                 >
                   <Descriptions.Item label="Full Name">
-                    {selectedReport.fullName}
+                    {selectedReport.name}
                   </Descriptions.Item>
                   <Descriptions.Item label="Email">
                     {selectedReport.email}
