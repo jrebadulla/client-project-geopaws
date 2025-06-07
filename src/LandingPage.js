@@ -11,6 +11,7 @@ import {
   Table,
   Dropdown,
   Menu,
+  Pagination,
 } from "antd";
 import {
   UserOutlined,
@@ -62,6 +63,12 @@ const LandingPage = ({ adminName }) => {
   const [concernFilters, setConcernFilters] = useState([]);
   const [petStatusFilter, setPetStatusFilter] = useState(null);
   const [adoptionStatusOptions, setAdoptionStatusOptions] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  const paginatedData = (
+    adoptionStatusFilter ? filteredTableData : tableData
+  ).slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleCardClick = async (category) => {
     setSelectedCategory(category);
@@ -606,7 +613,7 @@ const LandingPage = ({ adminName }) => {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh"}}>
+    <Layout style={{ minHeight: "100vh" }}>
       <Sidebar />
 
       <Layout>
@@ -617,7 +624,7 @@ const LandingPage = ({ adminName }) => {
             margin: "20px",
             background: "#fff",
             borderRadius: "8px",
-            marginTop: "70px"
+            marginTop: "70px",
           }}
         >
           {loading ? (
@@ -973,26 +980,43 @@ const LandingPage = ({ adminName }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {(adoptionStatusFilter ? filteredTableData : tableData).map(
-                      (item, index) => (
-                        <tr key={item.id || index}>
-                          <td style={tableCellStyle}>
-                            {item.name || item.fullname}
-                          </td>
-                          <td style={tableCellStyle}>{item.pettype}</td>
+                    {paginatedData.map((item, index) => (
+                      <tr key={item.id || index}>
+                        <td style={tableCellStyle}>
+                          {item.name || item.fullname}
+                        </td>
+                        <td style={tableCellStyle}>{item.pettype}</td>
 
-                          <td style={tableCellStyle}>
-                            {item.timestamp && item.timestamp.toDate
-                              ? item.timestamp.toDate().toLocaleString()
-                              : "N/A"}
-                          </td>
-                          <td style={tableCellStyle}>{item.email}</td>
-                          <td style={tableCellStyle}>{item.status}</td>
-                        </tr>
-                      )
-                    )}
+                        <td style={tableCellStyle}>
+                          {item.timestamp && item.timestamp.toDate
+                            ? item.timestamp.toDate().toLocaleString()
+                            : "N/A"}
+                        </td>
+                        <td style={tableCellStyle}>{item.email}</td>
+                        <td style={tableCellStyle}>{item.status}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginTop: 16,
+                  }}
+                >
+                  <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={
+                      adoptionStatusFilter
+                        ? filteredTableData.length
+                        : tableData.length
+                    }
+                    onChange={(page) => setCurrentPage(page)}
+                    showSizeChanger={false}
+                  />
+                </div>
               </div>
             ) : (
               <Table
@@ -1005,7 +1029,7 @@ const LandingPage = ({ adminName }) => {
                 columns={getColumns(selectedCategory)}
                 rowKey={(record) => record.id || record.uid}
                 loading={tableLoading}
-                pagination={false}
+                pagination={{ pageSize: 10 }}
                 onChange={(pagination, filters, sorter, extra) => {
                   setFilteredTableData(extra.currentDataSource);
                 }}
