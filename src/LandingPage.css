@@ -1,4 +1,11 @@
-.print-button{
-    margin-bottom: 10px;
-    width: 150px;
+.print-button {
+  margin-bottom: 10px;
+  width: 150px;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
 }

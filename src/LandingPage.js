@@ -839,6 +839,7 @@ const LandingPage = ({ adminName }) => {
             </>
           )}
           <Modal
+            bodyStyle={{ maxHeight: "90vh" }}
             title={
               selectedCategory === "closedReports" ? (
                 <div
@@ -955,13 +956,9 @@ const LandingPage = ({ adminName }) => {
             footer={null}
             width="80%"
             centered
-            bodyStyle={{
-              maxHeight: "70vh",
-              overflowY: "auto",
-            }}
           >
             {selectedCategory === "pendingRequests" ? (
-              <div style={{ overflowX: "auto" }}>
+              <div style={{ maxHeight: "515px", overflowY: "auto" }}>
                 <table
                   style={{
                     width: "100%",
@@ -1033,6 +1030,7 @@ const LandingPage = ({ adminName }) => {
                 onChange={(pagination, filters, sorter, extra) => {
                   setFilteredTableData(extra.currentDataSource);
                 }}
+                scroll={{ y: 400 }}
               />
             )}
 
