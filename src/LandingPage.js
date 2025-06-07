@@ -606,7 +606,7 @@ const LandingPage = ({ adminName }) => {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh"}}>
       <Sidebar />
 
       <Layout>
@@ -616,8 +616,8 @@ const LandingPage = ({ adminName }) => {
           style={{
             margin: "20px",
             background: "#fff",
-            padding: "30px",
             borderRadius: "8px",
+            marginTop: "70px"
           }}
         >
           {loading ? (

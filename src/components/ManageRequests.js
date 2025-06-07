@@ -11,11 +11,16 @@ import {
   Descriptions,
   Tag,
   Image,
+  Pagination,
+  Layout,
 } from "antd";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import Sidebar from "./Sidebar";
 import HeaderBar from "./HeaderBar";
+import { Content } from "antd/es/layout/layout";
+import { Input } from "antd";
+const { TextArea } = Input;
 
 const STATUS_BADGE = {
   Approved: "success",
@@ -32,7 +37,11 @@ function ManageRequests({ adminName = "Admin" }) {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
   const [petDetails, setPetDetails] = useState(null);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  const [isApproving, setIsApproving] = useState(false);
+  const [isDisapproving, setIsDisapproving] = useState(false);
+  const [disapproveReason, setDisapproveReason] = useState("");
   const pendingCount = requestData.filter((r) => r.status === "Pending").length;
   const approvedCount = requestData.filter(
     (r) => r.status === "Approved"
@@ -126,6 +135,11 @@ function ManageRequests({ adminName = "Admin" }) {
     ? requestData.filter((item) => item.status === activeTab)
     : [];
 
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   const renderSimpleTable = () => {
     if (filteredData.length === 0) {
       return <div>No {activeTab} requests found</div>;
@@ -145,7 +159,7 @@ function ManageRequests({ adminName = "Admin" }) {
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item) => (
+            {paginatedData.map((item) => (
               <tr key={item.id}>
                 <td style={tableCellStyle}>{item.name || "N/A"}</td>
                 <td style={tableCellStyle}>{item.email || "N/A"}</td>
@@ -190,73 +204,126 @@ function ManageRequests({ adminName = "Admin" }) {
                   visible={isModalOpen}
                   onCancel={() => setIsModalOpen(false)}
                   footer={[
-                    <Button
-                      key="disapprove"
-                      type="primary"
-                      danger
-                      onClick={() => {
-                        Modal.confirm({
-                          title: "Confirm Disapproval",
-                          content: (
-                            <p>
-                              Are you sure you want to{" "}
-                              <strong>disapprove</strong> this adoption request
-                              for <strong>{selectedRequest?.name}</strong>, who
-                              wants to adopt a{" "}
-                              <strong>{selectedRequest?.pettype}</strong>?
-                            </p>
-                          ),
-                          okText: "Yes, Disapprove",
-                          okType: "danger",
-                          okButtonProps: {
-                            type: "primary",
-                            danger: true,
-                          },
-                          cancelText: "Cancel",
-                          onOk: () => {
-                            handleStatusChange(
-                              selectedRequest.id,
-                              "Disapproved",
-                              selectedRequest.petId
-                            );
-                            setIsModalOpen(false);
-                          },
-                        });
-                      }}
-                    >
-                      Disapprove
-                    </Button>,
+                    // Show Disapprove button only if status is Pending
+                    selectedRequest?.status === "Pending" && (
+                      <Button
+                        key="disapprove"
+                        type="primary"
+                        danger
+                        loading={isDisapproving}
+                        onClick={() => {
+                          let reason = "";
 
-                    <Button
-                      key="approve"
-                      type="primary"
-                      onClick={() => {
-                        Modal.confirm({
-                          title: "Confirm Approval",
-                          content: (
-                            <p>
-                              Are you sure you want to <strong>approve</strong>{" "}
-                              this adoption request for{" "}
-                              <strong>{selectedRequest?.name}</strong>, who
-                              wants to adopt a{" "}
-                              <strong>{selectedRequest?.pettype}</strong>?
-                            </p>
-                          ),
-                          okText: "Yes, Approve",
-                          cancelText: "Cancel",
-                          onOk: () => {
-                            handleStatusChange(
-                              selectedRequest.id,
-                              "Approved",
-                              selectedRequest.petId
-                            );
-                            setIsModalOpen(false);
-                          },
-                        });
-                      }}
-                    >
-                      Approve
-                    </Button>,
+                          Modal.confirm({
+                            title: "Confirm Disapproval",
+                            content: (
+                              <div>
+                                <p>
+                                  Please provide a reason for disapproving{" "}
+                                  <strong>{selectedRequest?.name}</strong>'s
+                                  request.
+                                </p>
+                                <TextArea
+                                  rows={4}
+                                  placeholder="Enter reason here..."
+                                  onChange={(e) => {
+                                    reason = e.target.value;
+                                  }}
+                                />
+                              </div>
+                            ),
+                            okText: "Submit Disapproval",
+                            okType: "danger",
+                            cancelText: "Cancel",
+                            onOk: async () => {
+                              if (!reason.trim()) {
+                                message.warning("Please enter a reason.");
+                                throw new Error("No reason provided");
+                              }
+
+                              setIsDisapproving(true);
+                              try {
+                                // Save reason to Firestore (add to request_form as 'disapprove_reason')
+                                const requestRef = doc(
+                                  db,
+                                  "request_form",
+                                  selectedRequest.id
+                                );
+                                await updateDoc(requestRef, {
+                                  status: "Disapproved",
+                                  disapprove_reason: reason.trim(),
+                                });
+
+                                // Update pet status
+                                if (selectedRequest.petId) {
+                                  const petRef = doc(
+                                    db,
+                                    "pet",
+                                    selectedRequest.petId
+                                  );
+                                  await updateDoc(petRef, {
+                                    status: "Available",
+                                  });
+                                }
+
+                                message.success("Request disapproved.");
+                                setIsModalOpen(false);
+                                fetchRequests();
+                              } catch (err) {
+                                message.error("Disapproval failed.");
+                              } finally {
+                                setIsDisapproving(false);
+                              }
+                            },
+                          });
+                        }}
+                      >
+                        Disapprove
+                      </Button>
+                    ),
+
+                    // Show Approve button if status is Pending OR Disapproved
+                    (selectedRequest?.status === "Pending" ||
+                      selectedRequest?.status === "Disapproved") && (
+                      <Button
+                        key="approve"
+                        type="primary"
+                        onClick={() => {
+                          Modal.confirm({
+                            title: "Confirm Approval",
+                            content: (
+                              <p>
+                                Are you sure you want to{" "}
+                                <strong>approve</strong> this adoption request
+                                for <strong>{selectedRequest?.name}</strong>,
+                                who wants to adopt a{" "}
+                                <strong>{selectedRequest?.pettype}</strong>?
+                              </p>
+                            ),
+                            okText: "Yes, Approve",
+                            cancelText: "Cancel",
+                            onOk: async () => {
+                              setIsApproving(true);
+                              try {
+                                await handleStatusChange(
+                                  selectedRequest.id,
+                                  "Approved",
+                                  selectedRequest.petId
+                                );
+                                setIsModalOpen(false);
+                              } catch (err) {
+                                message.error("Approval failed.");
+                              } finally {
+                                setIsApproving(false);
+                              }
+                            },
+                          });
+                        }}
+                        style={{ marginLeft: 8 }}
+                      >
+                        Approve
+                      </Button>
+                    ),
                   ]}
                 >
                   {selectedRequest ? (
@@ -441,6 +508,36 @@ function ManageRequests({ adminName = "Admin" }) {
                           {selectedRequest.personal_refnumber}
                         </Descriptions.Item>
                       </Descriptions>
+
+                      {selectedRequest?.status === "Disapproved" && (
+                        <>
+                          <Typography.Title
+                            level={5}
+                            style={{
+                              color: "red",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <span role="img" aria-label="disapproved">
+                              ❌
+                            </span>
+                            Disapproved Reason
+                          </Typography.Title>
+
+                          <Descriptions
+                            column={1}
+                            size="small"
+                            contentStyle={{ color: "red", fontStyle: "italic" }}
+                          >
+                            <Descriptions.Item>
+                              {selectedRequest.disapprove_reason ||
+                                "No reason provided."}
+                            </Descriptions.Item>
+                          </Descriptions>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <p>No request selected.</p>
@@ -450,6 +547,17 @@ function ManageRequests({ adminName = "Admin" }) {
             ))}
           </tbody>
         </table>
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
+        >
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={filteredData.length}
+            onChange={(page) => setCurrentPage(page)}
+            showSizeChanger={false}
+          />
+        </div>
       </div>
     );
   };
@@ -467,40 +575,52 @@ function ManageRequests({ adminName = "Admin" }) {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <Sidebar />
-      <div style={{ flexGrow: 1 }}>
+      <Layout>
         <HeaderBar userName={adminName} />
-        <div style={{ padding: 20 }}>
-          <Card bordered style={{ marginBottom: 20 }}>
-            <Typography.Title level={3} style={{ textAlign: "center" }}>
-              Pet Adoption Requests
-            </Typography.Title>
-          </Card>
+        <Content
+          style={{
+            margin: "20px",
+            background: "#fff",
+            borderRadius: "8px",
+            marginTop: "70px",
+          }}
+        >
+          <div style={{ padding: 20 }}>
+            <Card bordered style={{ marginBottom: 20 }}>
+              <Typography.Title level={3} style={{ textAlign: "center" }}>
+                Pet Adoption Requests
+              </Typography.Title>
+            </Card>
 
-          <Tabs
-            activeKey={activeTab}
-            onChange={setActiveTab}
-            centered
-            items={[
-              { key: "Pending", label: `Pending (${pendingCount})` },
-              { key: "Approved", label: `Approved (${approvedCount})` },
-              { key: "Disapproved", label: `Disapproved (${disapproveCount})` },
-            ]}
-          />
+            <Tabs
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              centered
+              items={[
+                { key: "Pending", label: `Pending (${pendingCount})` },
+                { key: "Approved", label: `Approved (${approvedCount})` },
+                {
+                  key: "Disapproved",
+                  label: `Disapproved (${disapproveCount})`,
+                },
+              ]}
+            />
 
-          <Card>
-            {loading ? (
-              <div style={{ textAlign: "center", padding: "20px" }}>
-                <Spin tip="Loading requests..." />
-              </div>
-            ) : (
-              renderSimpleTable()
-            )}
-          </Card>
-        </div>
-      </div>
-    </div>
+            <Card>
+              {loading ? (
+                <div style={{ textAlign: "center", padding: "20px" }}>
+                  <Spin tip="Loading requests..." />
+                </div>
+              ) : (
+                renderSimpleTable()
+              )}
+            </Card>
+          </div>
+        </Content>
+      </Layout>
+    </Layout>
   );
 }
 

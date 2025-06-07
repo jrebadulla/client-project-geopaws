@@ -13,13 +13,16 @@ import {
   Descriptions,
   Avatar,
   Image,
+  Layout,
 } from "antd";
 import { UserOutlined, IdcardOutlined } from "@ant-design/icons";
 import Sidebar from "./Sidebar";
+import HeaderBar from "./HeaderBar";
+import { Content } from "antd/es/layout/layout";
 
 const { Title, Text } = Typography;
 
-const ManageUsers = () => {
+const ManageUsers = ({adminName = "Admin"}) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -100,134 +103,148 @@ const ManageUsers = () => {
   ];
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <Sidebar />
-
-      <div style={{ flexGrow: 1, padding: "20px" }}>
-        <Card
-          bordered
+      <Layout>
+        <HeaderBar userName={adminName} />
+        <Content
           style={{
-            marginBottom: "20px",
-            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+            margin: "20px",
+            background: "#fff",
+            borderRadius: "8px",
+            marginTop: "70px",
           }}
         >
-          <Title level={3} style={{ textAlign: "center", margin: 0 }}>
-            Members
-          </Title>
-        </Card>
+          <Card
+            bordered
+            style={{
+              marginBottom: "20px",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+            }}
+          >
+            <Title level={3} style={{ textAlign: "center", margin: 0 }}>
+              Members
+            </Title>
+          </Card>
 
-        <Card>
-          {loading ? (
-            <Spin
-              size="large"
-              style={{ display: "block", margin: "50px auto" }}
-            />
-          ) : (
-            <Table
-              dataSource={users}
-              columns={columns}
-              rowKey="id"
-              pagination={false}
-              bordered
-            />
-          )}
-        </Card>
-
-        <Modal
-          visible={isModalVisible}
-          onCancel={handleCloseModal}
-          footer={[
-            <Button key="close" type="primary" onClick={handleCloseModal}>
-              Close
-            </Button>,
-          ]}
-          centered
-          width={600}
-          bodyStyle={{
-            height: "450px",
-            overflowY: "auto",
-          }}
-        >
-          {selectedUser && (
-            <div style={{ textAlign: "center" }}>
-              <Avatar
-                size={100}
-                src={selectedUser.images}
-                icon={!selectedUser.images ? <UserOutlined /> : null}
-                style={{
-                  marginBottom: "20px",
-                  boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
-                }}
+          <Card>
+            {loading ? (
+              <Spin
+                size="large"
+                style={{ display: "block", margin: "50px auto" }}
               />
-
-              <Title level={4} style={{ marginBottom: "10px" }}>
-                {`${selectedUser.firstname} ${selectedUser.lastname}`}
-              </Title>
-
-              <Title level={4} style={{ marginBottom: 15, textAlign: "start" }}>
-                📋 Member Information
-              </Title>
-
-              <Descriptions
+            ) : (
+              <Table
+                dataSource={users}
+                columns={columns}
+                rowKey="id"
+                pagination={false}
                 bordered
-                size="small"
-                column={1}
-                layout="horizontal"
-              >
-                <Descriptions.Item label="Email">
-                  <Text>{selectedUser.email}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Contact">
-                  <Text>{selectedUser.contact || "N/A"}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Address">
-                  <Text>{selectedUser.address || "N/A"}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Age">
-                  <Text>{selectedUser.age || "N/A"}</Text>
-                </Descriptions.Item>
-              </Descriptions>
+              />
+            )}
+          </Card>
 
-              {/* Valid IDs Section */}
-              <div style={{ marginTop: "20px", textAlign: "center" }}>
-                <Title level={5}>
-                  <IdcardOutlined style={{ marginRight: "10px" }} />
-                  Valid IDs
+          <Modal
+            visible={isModalVisible}
+            onCancel={handleCloseModal}
+            footer={[
+              <Button key="close" type="primary" onClick={handleCloseModal}>
+                Close
+              </Button>,
+            ]}
+            centered
+            width={600}
+            bodyStyle={{
+              height: "450px",
+              overflowY: "auto",
+            }}
+          >
+            {selectedUser && (
+              <div style={{ textAlign: "center" }}>
+                <Avatar
+                  size={100}
+                  src={selectedUser.images}
+                  icon={!selectedUser.images ? <UserOutlined /> : null}
+                  style={{
+                    marginBottom: "20px",
+                    boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
+                  }}
+                />
+
+                <Title level={4} style={{ marginBottom: "10px" }}>
+                  {`${selectedUser.firstname} ${selectedUser.lastname}`}
                 </Title>
-                {selectedUser.images2 || selectedUser.images3 ? (
-                  <Space style={{ display: "flex", justifyContent: "center" }}>
-                    {selectedUser.images2 && (
-                      <Image
-                        src={selectedUser.images2}
-                        alt="Valid ID 1"
-                        width={150}
-                        style={{
-                          borderRadius: "8px",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                        }}
-                      />
-                    )}
-                    {selectedUser.images3 && (
-                      <Image
-                        src={selectedUser.images3}
-                        alt="Valid ID 2"
-                        width={150}
-                        style={{
-                          borderRadius: "8px",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                        }}
-                      />
-                    )}
-                  </Space>
-                ) : (
-                  <Text type="secondary">No valid IDs available</Text>
-                )}
+
+                <Title
+                  level={4}
+                  style={{ marginBottom: 15, textAlign: "start" }}
+                >
+                  📋 Member Information
+                </Title>
+
+                <Descriptions
+                  bordered
+                  size="small"
+                  column={1}
+                  layout="horizontal"
+                >
+                  <Descriptions.Item label="Email">
+                    <Text>{selectedUser.email}</Text>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Contact">
+                    <Text>{selectedUser.contact || "N/A"}</Text>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Address">
+                    <Text>{selectedUser.address || "N/A"}</Text>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Age">
+                    <Text>{selectedUser.age || "N/A"}</Text>
+                  </Descriptions.Item>
+                </Descriptions>
+
+                {/* Valid IDs Section */}
+                <div style={{ marginTop: "20px", textAlign: "center" }}>
+                  <Title level={5}>
+                    <IdcardOutlined style={{ marginRight: "10px" }} />
+                    Valid IDs
+                  </Title>
+                  {selectedUser.images2 || selectedUser.images3 ? (
+                    <Space
+                      style={{ display: "flex", justifyContent: "center" }}
+                    >
+                      {selectedUser.images2 && (
+                        <Image
+                          src={selectedUser.images2}
+                          alt="Valid ID 1"
+                          width={150}
+                          style={{
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                          }}
+                        />
+                      )}
+                      {selectedUser.images3 && (
+                        <Image
+                          src={selectedUser.images3}
+                          alt="Valid ID 2"
+                          width={150}
+                          style={{
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                          }}
+                        />
+                      )}
+                    </Space>
+                  ) : (
+                    <Text type="secondary">No valid IDs available</Text>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </Modal>
-      </div>
-    </div>
+            )}
+          </Modal>
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 

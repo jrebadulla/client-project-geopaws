@@ -24,3 +24,8 @@
 .custom-descriptions .ant-descriptions-item-label {
   background-color: #e6f7ff;
 }
+
+
+.ant-modal-mask {
+  background-color: rgba(46, 46, 46, 0.2) !important;
+}

@@ -11,13 +11,16 @@ import {
   Space,
   Empty,
   Tag,
+  Layout,
 } from "antd";
 import Sidebar from "./Sidebar";
 import { UserOutlined, CommentOutlined } from "@ant-design/icons";
+import { Content } from "antd/es/layout/layout";
+import HeaderBar from "./HeaderBar";
 
 const { Title, Text } = Typography;
 
-const ManageFeedback = () => {
+const ManageFeedback = ({adminName = "Admin"}) => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [users, setUsers] = useState({});
   const [loading, setLoading] = useState(true);
@@ -66,105 +69,114 @@ const ManageFeedback = () => {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f6f8fa" }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <Sidebar />
-
-      <div style={{ flexGrow: 1, padding: "24px" }}>
-        <Card
-          bordered={false}
+      <Layout>
+        <HeaderBar userName={adminName} />
+        <Content
           style={{
-            marginBottom: "24px",
-            background: "#ffffff",
-            borderRadius: 12,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+            margin: "20px",
+            background: "#fff",
+            borderRadius: "8px",
+            marginTop: "70px",
           }}
         >
-          <Title level={3} style={{ textAlign: "center", marginBottom: 4 }}>
-            💬 User Feedback
-          </Title>
-          <Text
-            type="secondary"
-            style={{ display: "block", textAlign: "center" }}
+          <Card
+            bordered={false}
+            style={{
+              marginBottom: "24px",
+              background: "#ffffff",
+              borderRadius: 12,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+            }}
           >
-            Insights and thoughts from users across the platform
-          </Text>
-        </Card>
+            <Title level={3} style={{ textAlign: "center", marginBottom: 4 }}>
+              💬 User Feedback
+            </Title>
+            <Text
+              type="secondary"
+              style={{ display: "block", textAlign: "center" }}
+            >
+              Insights and thoughts from users across the platform
+            </Text>
+          </Card>
 
-        <Card
-          style={{
-            borderRadius: 12,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-            backgroundColor: "#ffffff",
-          }}
-          bodyStyle={{ padding: "24px" }}
-        >
-          {loading ? (
-            <Spin
-              size="large"
-              style={{ display: "block", margin: "80px auto" }}
-            />
-          ) : feedbacks.length === 0 ? (
-            <Empty
-              description="No feedback submitted yet."
-              style={{ margin: "60px 0" }}
-            />
-          ) : (
-            <List
-              itemLayout="vertical"
-              dataSource={feedbacks}
-              style={{ maxHeight: "600px", overflowY: "auto" }}
-              renderItem={(item) => {
-                const user = getUserInfo(item.uid);
+          <Card
+            style={{
+              borderRadius: 12,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+              backgroundColor: "#ffffff",
+            }}
+            bodyStyle={{ padding: "24px" }}
+          >
+            {loading ? (
+              <Spin
+                size="large"
+                style={{ display: "block", margin: "80px auto" }}
+              />
+            ) : feedbacks.length === 0 ? (
+              <Empty
+                description="No feedback submitted yet."
+                style={{ margin: "60px 0" }}
+              />
+            ) : (
+              <List
+                itemLayout="vertical"
+                dataSource={feedbacks}
+                style={{ maxHeight: "600px", overflowY: "auto" }}
+                renderItem={(item) => {
+                  const user = getUserInfo(item.uid);
 
-                return (
-                  <List.Item
-                    key={item.id}
-                    style={{
-                      border: "1px solid #f0f0f0",
-                      borderRadius: 8,
-                      padding: "16px 20px",
-                      marginBottom: 16,
-                      background: "#fafafa",
-                    }}
-                  >
-                    <Space align="start" style={{ width: "100%" }}>
-                      <Avatar
-                        size="large"
-                        style={{
-                          backgroundColor: "#1890ff",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {user.initials}
-                      </Avatar>
-                      <div style={{ flex: 1 }}>
-                        <Text strong style={{ fontSize: 16 }}>
-                          {user.name}
-                        </Text>
-                        <div
+                  return (
+                    <List.Item
+                      key={item.id}
+                      style={{
+                        border: "1px solid #f0f0f0",
+                        borderRadius: 8,
+                        padding: "16px 20px",
+                        marginBottom: 16,
+                        background: "#fafafa",
+                      }}
+                    >
+                      <Space align="start" style={{ width: "100%" }}>
+                        <Avatar
+                          size="large"
                           style={{
-                            marginTop: 8,
-                            background: "#ffffff",
-                            padding: "12px 16px",
-                            borderRadius: 6,
-                            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                            backgroundColor: "#1890ff",
+                            fontWeight: "bold",
                           }}
                         >
-                          <CommentOutlined
-                            style={{ color: "#1890ff", marginRight: 8 }}
-                          />
-                          <Text>{item.feedback}</Text>
+                          {user.initials}
+                        </Avatar>
+                        <div style={{ flex: 1 }}>
+                          <Text strong style={{ fontSize: 16 }}>
+                            {user.name}
+                          </Text>
+                          <div
+                            style={{
+                              marginTop: 8,
+                              background: "#ffffff",
+                              padding: "12px 16px",
+                              borderRadius: 6,
+                              boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                            }}
+                          >
+                            <CommentOutlined
+                              style={{ color: "#1890ff", marginRight: 8 }}
+                            />
+                            <Text>{item.feedback}</Text>
+                          </div>
                         </div>
-                      </div>
-                    </Space>
-                  </List.Item>
-                );
-              }}
-            />
-          )}
-        </Card>
-      </div>
-    </div>
+                      </Space>
+                    </List.Item>
+                  );
+                }}
+              />
+            )}
+          </Card>
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 

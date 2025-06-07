@@ -18,6 +18,7 @@ import {
   Image,
   Space,
   DatePicker,
+  Layout,
 } from "antd";
 import Sidebar from "./Sidebar";
 import HeaderBar from "./HeaderBar";
@@ -31,6 +32,7 @@ import AddPetsForm from "./AddPets";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { Content } from "antd/es/layout/layout";
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
@@ -242,241 +244,253 @@ const ManagePets = ({ adminName }) => {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <Sidebar />
-      <div style={{ flexGrow: 1 }}>
-        <HeaderBar userName={adminName || "Admin"} />
-        <div style={{ padding: "20px" }}>
-          <Card bordered style={{ marginBottom: "20px" }}>
-            <Title level={3} style={{ textAlign: "center" }}>
-              Manage Pets
-            </Title>
-            <Row
-              justify="space-between"
-              align="middle"
-              style={{ marginBottom: "20px" }}
-            >
-              <Col>
-                <Button
-                  type="primary"
-                  icon={<PlusCircleOutlined />}
-                  onClick={() => setIsAddModalVisible(true)}
+      <Layout>
+        <Content
+          style={{
+            margin: "20px",
+            background: "#fff",
+            borderRadius: "8px",
+            marginTop: "70px",
+          }}
+        >
+          <div style={{ flexGrow: 1 }}>
+            <HeaderBar userName={adminName || "Admin"} />
+            <div style={{ padding: "20px" }}>
+              <Card bordered style={{ marginBottom: "20px" }}>
+                <Title level={3} style={{ textAlign: "center" }}>
+                  Manage Pets
+                </Title>
+                <Row
+                  justify="space-between"
+                  align="middle"
+                  style={{ marginBottom: "20px" }}
                 >
-                  Add Pet
-                </Button>
-              </Col>
-              <Col xs={24} sm={8}>
-                <Search
-                  placeholder="Search pet here..."
-                  allowClear
-                  value={searchType}
-                  onChange={(e) => handleSearchType(e.target.value)}
+                  <Col>
+                    <Button
+                      type="primary"
+                      icon={<PlusCircleOutlined />}
+                      onClick={() => setIsAddModalVisible(true)}
+                    >
+                      Add Pet
+                    </Button>
+                  </Col>
+                  <Col xs={24} sm={8}>
+                    <Search
+                      placeholder="Search pet here..."
+                      allowClear
+                      value={searchType}
+                      onChange={(e) => handleSearchType(e.target.value)}
+                    />
+                  </Col>
+                </Row>
+              </Card>
+              <Card>
+                <Table
+                  dataSource={filteredPets}
+                  columns={columns}
+                  rowKey="id"
+                  scroll={{ x: "max-content" }}
+                  pagination={{ pageSize: 10 }}
                 />
-              </Col>
-            </Row>
-          </Card>
-          <Card>
-            <Table
-              dataSource={filteredPets}
-              columns={columns}
-              rowKey="id"
-              pagination={false}
-              scroll={{ x: "max-content" }}
-            />
 
-            <div
-              style={{
-                marginTop: "20px",
-                display: "flex",
-                justifyContent: "flex-end",
-              }}
-            ></div>
-          </Card>
-          <Modal
-            visible={isModalVisible}
-            onCancel={handleCloseModal}
-            footer={null}
-            centered
-            width={600}
-            bodyStyle={{
-              height: "500px",
-              overflowY: "auto",
-            }}
-          >
-            {selectedPet && (
-              <div style={{ textAlign: "center", marginBottom: 20 }}>
-                <Image
-                  src={selectedPet.images || "https://via.placeholder.com/200"}
-                  alt="Pet"
-                  width={150}
-                  height={150}
+                <div
                   style={{
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
-                    marginBottom: "20px",
+                    marginTop: "20px",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                ></div>
+              </Card>
+              <Modal
+                visible={isModalVisible}
+                onCancel={handleCloseModal}
+                footer={null}
+                centered
+                width={600}
+                bodyStyle={{
+                  height: "500px",
+                  overflowY: "auto",
+                }}
+              >
+                {selectedPet && (
+                  <div style={{ textAlign: "center", marginBottom: 20 }}>
+                    <Image
+                      src={
+                        selectedPet.images || "https://via.placeholder.com/200"
+                      }
+                      alt="Pet"
+                      width={150}
+                      height={150}
+                      style={{
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
+                        marginBottom: "20px",
+                      }}
+                    />
+
+                    <Title
+                      level={3}
+                      style={{ marginBottom: "5px", fontWeight: "600" }}
+                    >
+                      {selectedPet.pet_name || "No Name"}
+                    </Title>
+
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: "16px", marginBottom: "20px" }}
+                    >
+                      {selectedPet.status || "Unknown Status"}
+                    </Text>
+
+                    <Title
+                      level={4}
+                      style={{ marginBottom: 15, textAlign: "start" }}
+                    >
+                      📋 Pet Information
+                    </Title>
+                    <Descriptions
+                      bordered
+                      column={1}
+                      style={{ marginBottom: 24, textAlign: "start" }}
+                    >
+                      <Descriptions.Item label="Name">
+                        {selectedPet.pet_name || "Unknown"}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Type">
+                        {selectedPet.type || "Unknown"}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Breed">
+                        {selectedPet.breed || "Unknown"}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Gender">
+                        {selectedPet.sex || "Unknown"}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Age">
+                        {selectedPet.age || "Unknown"}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Size">
+                        {selectedPet.size || "Unknown"}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Color">
+                        {selectedPet.color || "Unknown"}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Arrival Date">
+                        {selectedPet.arrivaldate || "Unknown"}
+                      </Descriptions.Item>
+                    </Descriptions>
+
+                    <Title
+                      level={4}
+                      style={{ marginBottom: 15, textAlign: "start" }}
+                    >
+                      🩺 Health & Status
+                    </Title>
+                    <Descriptions
+                      bordered
+                      column={1}
+                      size="small"
+                      style={{ marginBottom: 24, textAlign: "start" }}
+                    >
+                      <Descriptions.Item label="Vaccinated">
+                        {selectedPet.vaccinated || "Unknown"}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Skin Condition">
+                        {selectedPet.skin_condition || "Unknown"}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Appearance">
+                        {selectedPet.appearance || "Unknown"}
+                      </Descriptions.Item>
+                    </Descriptions>
+
+                    <Title
+                      level={4}
+                      style={{ marginBottom: 15, textAlign: "start" }}
+                    >
+                      🧠 Personality & Behavior
+                    </Title>
+                    <Descriptions
+                      bordered
+                      column={1}
+                      size="small"
+                      style={{ marginBottom: 24, textAlign: "start" }}
+                    >
+                      <Descriptions.Item label="Temperament">
+                        {selectedPet.temperament || "Unknown"}
+                      </Descriptions.Item>
+                    </Descriptions>
+
+                    <Title
+                      level={4}
+                      style={{ marginBottom: 15, textAlign: "start" }}
+                    >
+                      📖 Background
+                    </Title>
+                    <Descriptions
+                      bordered
+                      column={1}
+                      size="small"
+                      style={{ textAlign: "start" }}
+                    >
+                      <Descriptions.Item label="Background">
+                        {selectedPet.background || "None"}
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </div>
+                )}
+              </Modal>
+              <Modal
+                visible={isAddModalVisible}
+                onCancel={() => setIsAddModalVisible(false)}
+                footer={null}
+                centered
+                width={600}
+                bodyStyle={{
+                  height: "500px",
+                  overflowY: "auto",
+                }}
+              >
+                <AddPetsForm
+                  onFinishSuccess={() => {
+                    fetchPets();
+                    setIsAddModalVisible(false);
                   }}
                 />
-
-                <Title
-                  level={3}
-                  style={{ marginBottom: "5px", fontWeight: "600" }}
-                >
-                  {selectedPet.pet_name || "No Name"}
-                </Title>
-
-                <Text
-                  type="secondary"
-                  style={{ fontSize: "16px", marginBottom: "20px" }}
-                >
-                  {selectedPet.status || "Unknown Status"}
-                </Text>
-
-                <Title
-                  level={4}
-                  style={{ marginBottom: 15, textAlign: "start" }}
-                >
-                  📋 Pet Information
-                </Title>
-                <Descriptions
-                  bordered
-                  column={1}
-                  style={{ marginBottom: 24, textAlign: "start" }}
-                >
-                  <Descriptions.Item label="Name">
-                    {selectedPet.pet_name || "Unknown"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Type">
-                    {selectedPet.type || "Unknown"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Breed">
-                    {selectedPet.breed || "Unknown"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Gender">
-                    {selectedPet.sex || "Unknown"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Age">
-                    {selectedPet.age || "Unknown"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Size">
-                    {selectedPet.size || "Unknown"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Color">
-                    {selectedPet.color || "Unknown"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Arrival Date">
-                    {selectedPet.arrivaldate || "Unknown"}
-                  </Descriptions.Item>
-                </Descriptions>
-
-                <Title
-                  level={4}
-                  style={{ marginBottom: 15, textAlign: "start" }}
-                >
-                  🩺 Health & Status
-                </Title>
-                <Descriptions
-                  bordered
-                  column={1}
-                  size="small"
-                  style={{ marginBottom: 24, textAlign: "start" }}
-                >
-                  <Descriptions.Item label="Vaccinated">
-                    {selectedPet.vaccinated || "Unknown"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Skin Condition">
-                    {selectedPet.skin_condition || "Unknown"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Appearance">
-                    {selectedPet.appearance || "Unknown"}
-                  </Descriptions.Item>
-                </Descriptions>
-
-          
-                <Title
-                  level={4}
-                  style={{ marginBottom: 15, textAlign: "start" }}
-                >
-                  🧠 Personality & Behavior
-                </Title>
-                <Descriptions
-                  bordered
-                  column={1}
-                  size="small"
-                  style={{ marginBottom: 24, textAlign: "start" }}
-                >
-                  <Descriptions.Item label="Temperament">
-                    {selectedPet.temperament || "Unknown"}
-                  </Descriptions.Item>
-                </Descriptions>
-
-                <Title
-                  level={4}
-                  style={{ marginBottom: 15, textAlign: "start" }}
-                >
-                  📖 Background
-                </Title>
-                <Descriptions
-                  bordered
-                  column={1}
-                  size="small"
-                  style={{ textAlign: "start" }}
-                >
-                  <Descriptions.Item label="Background">
-                    {selectedPet.background || "None"}
-                  </Descriptions.Item>
-                </Descriptions>
-              </div>
-            )}
-          </Modal>
-          <Modal
-            visible={isAddModalVisible}
-            onCancel={() => setIsAddModalVisible(false)}
-            footer={null}
-            centered
-            width={600}
-            bodyStyle={{
-              height: "500px",
-              overflowY: "auto",
-            }}
-          >
-            <AddPetsForm
-              onFinishSuccess={() => {
-                fetchPets();
-                setIsAddModalVisible(false);
-              }}
-            />
-          </Modal>
-          <Modal
-            title={`✏️ Edit Pet Information: ${
-              editingPet?.pet_name || "Unknown"
-            }`}
-            visible={isEditModalVisible}
-            onCancel={() => {
-              setIsEditModalVisible(false);
-              setEditingPet(null);
-            }}
-            footer={null}
-            centered
-            width={600}
-            bodyStyle={{
-              height: "450px",
-              overflowY: "auto",
-            }}
-          >
-            <AddPetsForm
-              pet={editingPet}
-              isEdit={true}
-              onFinishSuccess={() => {
-                fetchPets();
-                setIsEditModalVisible(false);
-                setEditingPet(null);
-              }}
-            />
-          </Modal>
-        </div>
-      </div>
-    </div>
+              </Modal>
+              <Modal
+                title={`✏️ Edit Pet Information: ${
+                  editingPet?.pet_name || "Unknown"
+                }`}
+                visible={isEditModalVisible}
+                onCancel={() => {
+                  setIsEditModalVisible(false);
+                  setEditingPet(null);
+                }}
+                footer={null}
+                centered
+                width={600}
+                bodyStyle={{
+                  height: "450px",
+                  overflowY: "auto",
+                }}
+              >
+                <AddPetsForm
+                  pet={editingPet}
+                  isEdit={true}
+                  onFinishSuccess={() => {
+                    fetchPets();
+                    setIsEditModalVisible(false);
+                    setEditingPet(null);
+                  }}
+                />
+              </Modal>
+            </div>
+          </div>
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 

@@ -121,12 +121,14 @@ const ManageMessages = ({ adminUid, adminName }) => {
           (a, b) => a.timestamp.seconds - b.timestamp.seconds
         );
 
+        const previousCount = messagesHistory.length;
         setMessagesHistory(filteredMessages);
 
-        // Scroll to the bottom when messages are updated
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
+        if (filteredMessages.length > previousCount) {
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, 100);
+        }
 
         filteredMessages
           .filter(
@@ -234,206 +236,224 @@ const ManageMessages = ({ adminUid, adminName }) => {
       <Sidebar />
       <Layout>
         <HeaderBar userName={adminName || "Admin"} />
+        <Content
+          style={{
+            margin: "20px",
+            background: "#fff",
+            borderRadius: "8px",
+            marginTop: "70px",
+          }}
+        >
+          <Layout>
+            <Sider
+              width={300}
+              style={{ background: "#fff", borderRight: "1px solid #ddd" }}
+            >
+              <div style={{ padding: "20px", textAlign: "center" }}>
+                <Title level={4}>Contacts</Title>
+              </div>
 
-        <Layout>
-          <Sider
-            width={300}
-            style={{ background: "#fff", borderRight: "1px solid #ddd" }}
-          >
-            <div style={{ padding: "20px", textAlign: "center" }}>
-              <Title level={4}>Contacts</Title>
-            </div>
-            {loadingCustomers ? (
-              <Spin
-                size="large"
-                style={{ display: "block", margin: "50px auto" }}
-              />
-            ) : (
-              <List
-                dataSource={customers}
-                renderItem={(user) => (
-                  <List.Item
-                    onClick={() => handleSelectUser(user)}
+              {/* Add this wrapper */}
+              <div style={{ height: "calc(100vh - 150px)", overflowY: "auto" }}>
+                {loadingCustomers ? (
+                  <Spin
+                    size="large"
+                    style={{ display: "block", margin: "50px auto" }}
+                  />
+                ) : (
+                  <List
+                    dataSource={customers}
+                    renderItem={(user) => (
+                      <List.Item
+                        onClick={() => handleSelectUser(user)}
+                        style={{
+                          padding: "10px 20px",
+                          cursor: "pointer",
+                          backgroundColor:
+                            selectedUser?.id === user.id
+                              ? "#f0f2f5"
+                              : "inherit",
+                        }}
+                      >
+                        <List.Item.Meta
+                          avatar={<Avatar icon={<UserOutlined />} />}
+                          title={
+                            <Badge
+                              count={unreadCounts[user.id]}
+                              offset={[10, 0]}
+                            >
+                              <strong>
+                                {user.firstname} {user.lastname}
+                              </strong>
+                            </Badge>
+                          }
+                          description={user.email}
+                        />
+                      </List.Item>
+                    )}
+                  />
+                )}
+              </div>
+            </Sider>
+
+            <Content style={{ padding: "20px", background: "#fff" }}>
+              {selectedUser ? (
+                <>
+                  <Title
+                    level={4}
                     style={{
-                      padding: "10px 20px",
-                      cursor: "pointer",
-                      backgroundColor:
-                        selectedUser?.id === user.id ? "#f0f2f5" : "inherit",
+                      marginBottom: 16,
+                      borderBottom: "1px solid #eee",
+                      paddingBottom: 8,
                     }}
                   >
-                    <List.Item.Meta
-                      avatar={<Avatar icon={<UserOutlined />} />}
-                      title={
-                        <Badge count={unreadCounts[user.id]} offset={[10, 0]}>
-                          <strong>
-                            {user.firstname} {user.lastname}
-                          </strong>
-                        </Badge>
-                      }
-                      description={user.email}
-                    />
-                  </List.Item>
-                )}
-              />
-            )}
-          </Sider>
+                    💬 Chat with {selectedUser.firstname}{" "}
+                    {selectedUser.lastname}
+                  </Title>
 
-          <Content style={{ padding: "20px", background: "#fff" }}>
-            {selectedUser ? (
-              <>
-                <Title
-                  level={4}
-                  style={{
-                    marginBottom: 16,
-                    borderBottom: "1px solid #eee",
-                    paddingBottom: 8,
-                  }}
-                >
-                  💬 Chat with {selectedUser.firstname} {selectedUser.lastname}
-                </Title>
+                  <div
+                    style={{
+                      height: "390px",
+                      overflowY: "auto",
+                      marginBottom: "10px",
+                      padding: "0 10px",
+                    }}
+                  >
+                    {messagesHistory.length > 0 ? (
+                      messagesHistory.map((msg) => {
+                        const isSender = msg.sender_uid === adminUid;
+                        const alignStyle = isSender ? "flex-end" : "flex-start";
+                        const bubbleColor = isSender ? "#1890ff" : "#f0f0f0";
+                        const textColor = isSender ? "#fff" : "#000";
+                        const borderRadius = isSender
+                          ? "16px 16px 0 16px"
+                          : "16px 16px 16px 0";
 
-                <div
-                  style={{
-                    height: "500px",
-                    overflowY: "auto",
-                    marginBottom: "10px",
-                    padding: "0 10px",
-                  }}
-                >
-                  {messagesHistory.length > 0 ? (
-                    messagesHistory.map((msg) => {
-                      const isSender = msg.sender_uid === adminUid;
-                      const alignStyle = isSender ? "flex-end" : "flex-start";
-                      const bubbleColor = isSender ? "#1890ff" : "#f0f0f0";
-                      const textColor = isSender ? "#fff" : "#000";
-                      const borderRadius = isSender
-                        ? "16px 16px 0 16px"
-                        : "16px 16px 16px 0";
-
-                      return (
-                        <div
-                          key={msg.id}
-                          style={{
-                            display: "flex",
-                            justifyContent: alignStyle,
-                            marginBottom: "12px",
-                          }}
-                        >
+                        return (
                           <div
+                            key={msg.id}
                             style={{
-                              maxWidth: "75%",
-                              textAlign: isSender ? "right" : "left",
+                              display: "flex",
+                              justifyContent: alignStyle,
+                              marginBottom: "12px",
                             }}
                           >
-                            {msg.image && (
-                              <img
-                                src={msg.image}
-                                alt="attachment"
-                                style={{
-                                  maxWidth: "200px",
-                                  borderRadius: 12,
-                                  marginBottom: 6,
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                }}
-                              />
-                            )}
-                            {msg.text && (
-                              <div
-                                style={{
-                                  background: bubbleColor,
-                                  color: textColor,
-                                  padding: "10px 14px",
-                                  borderRadius,
-                                  boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                                  display: "inline-block",
-                                  wordBreak: "break-word",
-                                }}
-                              >
-                                {msg.text}
-                              </div>
-                            )}
-                            {msg.timestamp && (
-                              <div
-                                style={{
-                                  fontSize: "11px",
-                                  color: "#999",
-                                  marginTop: 4,
-                                }}
-                              >
-                                {new Date(
-                                  msg.timestamp.seconds
-                                    ? msg.timestamp.seconds * 1000
-                                    : msg.timestamp
-                                ).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </div>
-                            )}
+                            <div
+                              style={{
+                                maxWidth: "75%",
+                                textAlign: isSender ? "right" : "left",
+                              }}
+                            >
+                              {msg.image && (
+                                <img
+                                  src={msg.image}
+                                  alt="attachment"
+                                  style={{
+                                    maxWidth: "200px",
+                                    borderRadius: 12,
+                                    marginBottom: 6,
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                  }}
+                                />
+                              )}
+                              {msg.text && (
+                                <div
+                                  style={{
+                                    background: bubbleColor,
+                                    color: textColor,
+                                    padding: "10px 14px",
+                                    borderRadius,
+                                    boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                                    display: "inline-block",
+                                    wordBreak: "break-word",
+                                  }}
+                                >
+                                  {msg.text}
+                                </div>
+                              )}
+                              {msg.timestamp && (
+                                <div
+                                  style={{
+                                    fontSize: "11px",
+                                    color: "#999",
+                                    marginTop: 4,
+                                  }}
+                                >
+                                  {new Date(
+                                    msg.timestamp.seconds
+                                      ? msg.timestamp.seconds * 1000
+                                      : msg.timestamp
+                                  ).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <Empty description="No messages yet" />
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
+                        );
+                      })
+                    ) : (
+                      <Empty description="No messages yet" />
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-end",
-                    gap: 10,
-                    paddingTop: 10,
-                    borderTop: "1px solid #eee",
-                    marginTop: 16,
-                  }}
-                >
-                  <TextArea
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    rows={2}
-                    placeholder="Type your message..."
+                  <div
                     style={{
-                      flex: 1,
-                      borderRadius: 8,
-                      resize: "none",
+                      display: "flex",
+                      alignItems: "flex-end",
+                      gap: 10,
+                      paddingTop: 10,
+                      borderTop: "1px solid #eee",
+                      marginTop: 16,
                     }}
-                  />
-                  <Upload
-                    beforeUpload={() => false}
-                    onChange={handleFileChange}
-                    accept="image/jpeg, image/png, image/jpg"
-                    showUploadList={false}
                   >
-                    <Button icon={<PaperClipOutlined />} type="text" />
-                  </Upload>
-                  <Button
-                    type="primary"
-                    icon={<SendOutlined />}
-                    onClick={handleSendMessage}
-                    loading={sending}
-                    style={{ borderRadius: 6 }}
-                  />
-                </div>
-
-                {imagePreview && (
-                  <div style={{ marginTop: "10px", textAlign: "center" }}>
-                    <img
-                      src={imagePreview}
-                      alt="Selected preview"
-                      style={{ maxWidth: "200px", borderRadius: "8px" }}
+                    <TextArea
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      rows={2}
+                      placeholder="Type your message..."
+                      style={{
+                        flex: 1,
+                        borderRadius: 8,
+                        resize: "none",
+                      }}
+                    />
+                    <Upload
+                      beforeUpload={() => false}
+                      onChange={handleFileChange}
+                      accept="image/jpeg, image/png, image/jpg"
+                      showUploadList={false}
+                    >
+                      <Button icon={<PaperClipOutlined />} type="text" />
+                    </Upload>
+                    <Button
+                      type="primary"
+                      icon={<SendOutlined />}
+                      onClick={handleSendMessage}
+                      loading={sending}
+                      style={{ borderRadius: 6 }}
                     />
                   </div>
-                )}
-              </>
-            ) : (
-              <Empty description="Select a contact to start messaging" />
-            )}
-          </Content>
-        </Layout>
+
+                  {imagePreview && (
+                    <div style={{ marginTop: "10px", textAlign: "center" }}>
+                      <img
+                        src={imagePreview}
+                        alt="Selected preview"
+                        style={{ maxWidth: "200px", borderRadius: "8px" }}
+                      />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Empty description="Select a contact to start messaging" />
+              )}
+            </Content>
+          </Layout>
+        </Content>
       </Layout>
     </Layout>
   );

@@ -142,13 +142,18 @@ const HeaderBar = () => {
   return (
     <Header
       style={{
+        position: "fixed",
+        top: 0,
+        left: 200, // 👈 match the sidebar width
+        width: "calc(100% - 200px)", // 👈 fill remaining space
+        height: "64px",
+        zIndex: 1000,
         background: "#fff",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         padding: "0 20px",
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-        zIndex: 1000,
       }}
     >
       {/* Logo or App Title */}
@@ -159,7 +164,9 @@ const HeaderBar = () => {
         {/* Notifications */}
         <Dropdown overlay={notificationMenu} trigger={["click"]}>
           <Badge count={notifications.length} offset={[-3, 10]}>
-            <BellOutlined style={{ fontSize: "26px", cursor: "pointer" }} />
+            <BellOutlined
+              style={{ fontSize: "26px", cursor: "pointer", zIndex: "1001" }}
+            />
           </Badge>
         </Dropdown>
 

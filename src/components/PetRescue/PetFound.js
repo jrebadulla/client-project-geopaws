@@ -12,6 +12,7 @@ import {
   Tag,
   Select,
   Space,
+  Layout,
 } from "antd";
 import React, { useState, useEffect } from "react";
 import HeaderBar from "../HeaderBar";
@@ -21,6 +22,7 @@ import TabPane from "antd/es/tabs/TabPane";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 
 import { db } from "../../firebase";
+import { Content } from "antd/es/layout/layout";
 const { Title } = Typography;
 const { Option } = Select;
 
@@ -167,11 +169,18 @@ const PetFound = ({ adminName }) => {
   ];
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <Sidebar />
-      <div style={{ flexGrow: 1 }}>
+      <Layout>
         <HeaderBar userName={adminName || "Admin"} />
-        <div style={{ padding: "20px" }}>
+        <Content
+          style={{
+            margin: "20px",
+            background: "#fff",
+            borderRadius: "8px",
+            marginTop: "70px",
+          }}
+        >
           <Card
             bordered
             style={{
@@ -203,7 +212,7 @@ const PetFound = ({ adminName }) => {
             loading={loading}
             rowKey="id"
             bordered
-            pagination={false}
+            pagination={{ pageSize: 10 }}
           />
 
           <Modal
@@ -388,9 +397,9 @@ const PetFound = ({ adminName }) => {
               </div>
             )}
           </Modal>
-        </div>
-      </div>
-    </div>
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 
