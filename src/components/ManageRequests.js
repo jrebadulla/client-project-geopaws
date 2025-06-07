@@ -146,16 +146,70 @@ function ManageRequests({ adminName = "Admin" }) {
     }
 
     return (
-      <div style={{ overflowX: "auto" }}>
+      <div style={{ overflowX: "auto", maxHeight: "500px" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              <th style={tableHeaderStyle}>Name</th>
-              <th style={tableHeaderStyle}>Email</th>
-              <th style={tableHeaderStyle}>Phone</th>
-              <th style={tableHeaderStyle}>Pet Type</th>
-              <th style={tableHeaderStyle}>Status</th>
-              <th style={tableHeaderStyle}>Actions</th>
+              <th
+                style={{
+                  ...tableHeaderStyle,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                }}
+              >
+                Name
+              </th>
+              <th
+                style={{
+                  ...tableHeaderStyle,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                }}
+              >
+                Email
+              </th>
+              <th
+                style={{
+                  ...tableHeaderStyle,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                }}
+              >
+                Phone
+              </th>
+              <th
+                style={{
+                  ...tableHeaderStyle,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                }}
+              >
+                Pet Type
+              </th>
+              <th
+                style={{
+                  ...tableHeaderStyle,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                }}
+              >
+                Status
+              </th>
+              <th
+                style={{
+                  ...tableHeaderStyle,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                }}
+              >
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>

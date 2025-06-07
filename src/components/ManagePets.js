@@ -291,7 +291,7 @@ const ManagePets = ({ adminName }) => {
                   dataSource={filteredPets}
                   columns={columns}
                   rowKey="id"
-                  scroll={{ x: "max-content" }}
+                  scroll={{ x: "max-content", y: 400 }}
                   pagination={{ pageSize: 10 }}
                 />
 

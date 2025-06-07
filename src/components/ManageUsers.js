@@ -22,7 +22,7 @@ import { Content } from "antd/es/layout/layout";
 
 const { Title, Text } = Typography;
 
-const ManageUsers = ({adminName = "Admin"}) => {
+const ManageUsers = ({ adminName = "Admin" }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -138,8 +138,8 @@ const ManageUsers = ({adminName = "Admin"}) => {
                 dataSource={users}
                 columns={columns}
                 rowKey="id"
-                pagination={false}
-                bordered
+                pagination={{ pageSize: 10 }}
+                scroll={{ x: "max-content", y: 400 }}
               />
             )}
           </Card>

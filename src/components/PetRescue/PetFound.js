@@ -211,7 +211,8 @@ const PetFound = ({ adminName }) => {
             columns={columns}
             loading={loading}
             rowKey="id"
-            bordered
+            
+            scroll={{ x: "max-content", y: 400 }}
             pagination={{ pageSize: 10 }}
           />
 
