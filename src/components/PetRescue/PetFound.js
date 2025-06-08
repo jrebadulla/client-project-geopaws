@@ -32,11 +32,11 @@ const PetFound = ({ adminName }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [updatedStatus, setUpdatedStatus] = useState("In Progress");
-  const [activeTab, setActiveTab] = useState("Stray");
+  const [activeTab, setActiveTab] = useState("pending");
 
   const fetchReports = async () => {
     try {
-      const reportCollection = collection(db, "reports");
+      const reportCollection = collection(db, "animal_reports");
       const snapshot = await getDocs(reportCollection);
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -56,63 +56,25 @@ const PetFound = ({ adminName }) => {
   }, []);
 
   const filteredData = reportData.filter((report) => {
-    if (activeTab === "Stray")
-      return (
-        report.report_type === "Stray" &&
-        report.status !== "In Progress" &&
-        report.status !== "Resolved"
-      );
-
-    if (activeTab === "In Progress" || activeTab === "Resolved") {
-      return report.status === activeTab && report.report_type === "Stray";
-    }
+    if (activeTab === "pending") return report.status === "pending";
+    if (activeTab === "In Progress") return report.status === "In Progress";
+    if (activeTab === "Resolved") return report.status === "Resolved";
     return false;
   });
 
-  const strayCount = reportData.filter(
-    (r) =>
-      r.report_type === "Stray" &&
-      r.status !== "In Progress" &&
-      r.status !== "Resolved"
-  ).length;
-
+  const strayCount = reportData.filter((r) => r.status === "pending").length;
   const inProgressCount = reportData.filter(
-    (r) => r.status === "In Progress" && r.report_type === "Stray"
+    (r) => r.status === "In Progress"
   ).length;
   const resolvedCount = reportData.filter(
-    (r) => r.status === "Resolved" && r.report_type === "Stray"
+    (r) => r.status === "Resolved"
   ).length;
+
   const columns = [
     {
-      title: "Reported by",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-    },
-    {
-      title: "Phone",
-      dataIndex: "phone",
-      key: "phone",
-    },
-    {
-      title: "Location Found",
-      dataIndex: "location",
-      key: "location",
-    },
-    {
       title: "Type",
-      dataIndex: ["typeOfAnimal", "dog"],
-      key: "typeOfAnimal",
-      render: (_, record) => {
-        const type = record.typeOfAnimal;
-        if (type?.dog) return "Dog";
-        if (type?.cat) return "Cat";
-        return "Other";
-      },
+      dataIndex: "animalType",
+      key: "animalType",
     },
     {
       title: "Status",
@@ -120,9 +82,9 @@ const PetFound = ({ adminName }) => {
       key: "status",
       render: (text) => {
         const colorMap = {
-          Stray: "blue",
+          pending: "yellow",
           Resolved: "green",
-          "In Progress": "gold",
+          "In Progress": "blue",
           default: "gray",
         };
 
@@ -133,14 +95,18 @@ const PetFound = ({ adminName }) => {
     },
 
     {
-      title: "Date Spotted",
-      dataIndex: "dateTimeSpotted",
-      key: "dateTimeSpotted",
+      title: <div style={{ whiteSpace: "nowrap" }}>Date Reported</div>,
+      dataIndex: "reportDate",
+      key: "reportDate",
+      width: 160,
+      render: (value) =>
+        value?.toDate ? value.toDate().toLocaleString() : value || "N/A",
     },
+
     {
       title: "Photo",
-      dataIndex: "photoUrl",
-      key: "photoUrl",
+      dataIndex: "imageUrls",
+      key: "imageUrls",
       render: (url) => (
         <img
           src={url}
@@ -167,6 +133,18 @@ const PetFound = ({ adminName }) => {
       ),
     },
   ];
+
+  const formatTime = (hour, minute) => {
+    const date = new Date();
+    date.setHours(hour);
+    date.setMinutes(minute);
+
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -197,7 +175,7 @@ const PetFound = ({ adminName }) => {
             onChange={(key) => setActiveTab(key)}
             centered
           >
-            <TabPane tab={`Stray (${strayCount})`} key="Stray" />
+            <TabPane tab={`pending (${strayCount})`} key="pending" />
 
             <TabPane
               tab={`In Progress (${inProgressCount})`}
@@ -211,13 +189,20 @@ const PetFound = ({ adminName }) => {
             columns={columns}
             loading={loading}
             rowKey="id"
-            
             scroll={{ x: "max-content", y: 400 }}
             pagination={{ pageSize: 10 }}
           />
 
           <Modal
-            title={<Title level={4}>Review Report Details</Title>}
+            title={
+              selectedReport ? (
+                <Title level={5}>
+                  Review Missing {selectedReport.petType || "Pet"}
+                </Title>
+              ) : (
+                <Title level={5}>Loading...</Title>
+              )
+            }
             visible={isModalVisible}
             centered
             width={600}
@@ -235,21 +220,82 @@ const PetFound = ({ adminName }) => {
                     Cancel
                   </Button>
 
-                  <Select
-                    value={updatedStatus}
-                    onChange={(value) => setUpdatedStatus(value)}
-                    style={{ width: 160 }}
-                    placeholder="Select Status to Update"
-                  >
-                    <Option value="In Progress">In Progress</Option>
-                    <Option value="Resolved">Resolved</Option>
-                  </Select>
+                  {/* <Select
+                          value={updatedStatus}
+                          onChange={(value) => setUpdatedStatus(value)}
+                          style={{ width: 160 }}
+                          disabled={selectedReport?.status === "Resolved"}
+                        >
+                          {selectedReport?.status === "pending" && (
+                            <Option value="In Progress">In Progress</Option>
+                          )}
+                          {selectedReport?.status === "In Progress" && (
+                            <Option value="Resolved">Resolved</Option>
+                          )}
+                        </Select> */}
 
+                  {/* <Button
+                          type="primary"
+                          onClick={() => {
+                            Modal.confirm({
+                              title: `Are you sure you want to mark this report as "${updatedStatus}"?`,
+                              content: (
+                                <div>
+                                  <p>
+                                    <strong>Description:</strong>{" "}
+                                    {selectedReport?.description || "No description"}
+                                  </p>
+                                  <p>
+                                    <strong>Reported by:</strong>{" "}
+                                    {selectedReport?.name}
+                                  </p>
+                                  <p>
+                                    <strong>Location Found:</strong>{" "}
+                                    {selectedReport?.location}
+                                  </p>
+                                </div>
+                              ),
+                              okText: `Yes, mark as ${updatedStatus}`,
+                              cancelText: "Cancel",
+                              onOk: async () => {
+                                try {
+                                  const reportRef = doc(
+                                    db,
+                                    "pet_reports",
+                                    selectedReport.id
+                                  );
+                                  await updateDoc(reportRef, {
+                                    status: updatedStatus,
+                                  });
+                                  message.success(
+                                    `Report marked as "${updatedStatus}"`
+                                  );
+                                  setIsModalVisible(false);
+                                  fetchReports();
+                                } catch (error) {
+                                  message.error("Failed to update report.");
+                                }
+                              },
+                            });
+                          }}
+                        >
+                          Update Status
+                        </Button> */}
                   <Button
                     type="primary"
                     onClick={() => {
+                      let nextStatus = null;
+
+                      if (selectedReport?.status === "pending") {
+                        nextStatus = "In Progress";
+                      } else if (selectedReport?.status === "In Progress") {
+                        nextStatus = "Resolved";
+                      }
+
+                      if (!nextStatus) return;
+
                       Modal.confirm({
-                        title: `Are you sure you want to mark this report as "${updatedStatus}"?`,
+                        title: `Are you sure you want to mark this report as "${nextStatus}"?`,
                         content: (
                           <div>
                             <p>
@@ -266,21 +312,20 @@ const PetFound = ({ adminName }) => {
                             </p>
                           </div>
                         ),
-                        okText: `Yes, mark as ${updatedStatus}`,
+                        okText: `Yes, mark as ${nextStatus}`,
                         cancelText: "Cancel",
                         onOk: async () => {
                           try {
                             const reportRef = doc(
                               db,
-                              "reports",
+                              "pet_reports",
                               selectedReport.id
                             );
                             await updateDoc(reportRef, {
-                              status: updatedStatus,
+                              status: nextStatus,
+                              updatedAt: new Date(),
                             });
-                            message.success(
-                              `Report marked as "${updatedStatus}"`
-                            );
+                            message.success(`Report marked as "${nextStatus}"`);
                             setIsModalVisible(false);
                             fetchReports();
                           } catch (error) {
@@ -290,7 +335,11 @@ const PetFound = ({ adminName }) => {
                       });
                     }}
                   >
-                    Update Status
+                    {selectedReport?.status === "pending"
+                      ? "Mark as In Progress"
+                      : selectedReport?.status === "In Progress"
+                      ? "Mark as Resolved"
+                      : "Status Updated"}
                   </Button>
                 </Space>
               )
@@ -299,7 +348,7 @@ const PetFound = ({ adminName }) => {
             {selectedReport && (
               <div>
                 <Image
-                  src={selectedReport.photoUrl}
+                  src={selectedReport.imageUrls}
                   alt="Reported Pet"
                   width="100%"
                   height={250}
@@ -311,73 +360,112 @@ const PetFound = ({ adminName }) => {
                   preview={true}
                 />
 
-                <Title level={5}>Reporter Information ℹ️</Title>
+                <Title level={5}>Pet Information</Title>
+
                 <Descriptions
                   column={1}
                   bordered
                   size="small"
                   labelStyle={{ fontWeight: 600 }}
                 >
-                  <Descriptions.Item label="Full Name">
-                    {selectedReport.name}
+                  {/* <Descriptions.Item label="Full Name">
+                          {selectedReport.name}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Email">
+                          {selectedReport.email}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Phone">
+                          {selectedReport.phone}
+                        </Descriptions.Item> */}
+                  <Descriptions.Item label="Number of Stray Animal Seen">
+                    {selectedReport.numberOfAnimals}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Email">
-                    {selectedReport.email}
+                  <Descriptions.Item label="Breed">
+                    {selectedReport.breed}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Phone">
-                    {selectedReport.phone}
+                  <Descriptions.Item label="Color Markings">
+                    {selectedReport.colorMarkings}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Location Found">
-                    {selectedReport.location}
+                  <Descriptions.Item label="Gender">
+                    {selectedReport.gender}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Date/Time Spotted">
-                    {selectedReport.dateTimeSpotted}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Status">
-                    <Tag
-                      color={
-                        selectedReport.status === "Stray"
-                          ? "blue"
-                          : selectedReport.status === "Resolved"
-                          ? "green"
-                          : selectedReport.status === "In Progress"
-                          ? "gold"
-                          : "default"
-                      }
-                    >
-                      {selectedReport.status}
-                    </Tag>
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Description">
-                    {selectedReport.description}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Animal Still There">
-                    {selectedReport.animalStillThere}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Can Secure Animal">
-                    {selectedReport.canSecureAnimal}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Immediate Danger">
-                    {selectedReport.immediateDanger}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Condition">
-                    {selectedReport.condition || "N/A"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Remarks">
-                    {selectedReport.remarks || "None"}
+                  {/* <Descriptions.Item label="Age">
+                    {selectedReport.age}
+                  </Descriptions.Item> */}
+                  <Descriptions.Item label="Size">
+                    {selectedReport.size}
                   </Descriptions.Item>
                 </Descriptions>
 
                 <Divider />
+                <Title level={5}>Location Details</Title>
+                <Descriptions
+                  column={1}
+                  bordered
+                  size="small"
+                  labelStyle={{ fontWeight: 600 }}
+                >
+                  <Descriptions.Item label="Date and Time Seen Missing">
+                    {selectedReport.reportDate?.toDate().toLocaleString()}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Location Last Seen">
+                    City of San Pedro, Laguna
+                  </Descriptions.Item>
 
-                <Title level={5}>Behavior Observed</Title>
+                  <Descriptions.Item label="Barangay">
+                    {"Pacita 1"}
+                  </Descriptions.Item>
+                  {/* <Descriptions.Item label="Circumstances">
+                    {selectedReport.circumstances}
+                  </Descriptions.Item> */}
+                </Descriptions>
+
+                {/* <Divider />
+                <Title level={5}> Behavior Observed</Title>
+                <Descriptions
+                  column={1}
+                  bordered
+                  size="small"
+                  labelStyle={{ fontWeight: 600 }}
+                >
+              
+                  <Descriptions.Item label="Medical Conditions/Special Needs">
+                    {selectedReport.medicalConditions}
+                  </Descriptions.Item>
+                </Descriptions> */}
+
+                <Divider />
+
+                <Title level={5}>behaviorObserved</Title>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {selectedReport.behaviorObserved &&
-                    Object.entries(selectedReport.behaviorObserved)
-                      .filter(([_, value]) => value)
-                      .map(([key]) => (
-                        <Tag key={key} color="blue">
-                          {key}
+                  {Array.isArray(selectedReport.behaviorObserved) &&
+                    selectedReport.behaviorObserved.map((behavior, index) => (
+                      <Tag key={index} color="blue">
+                        {behavior}
+                      </Tag>
+                    ))}
+                </div>
+
+                <Divider />
+
+                <Title level={5}>Status</Title>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {selectedReport.status &&
+                    selectedReport.status
+                      .split(",")
+                      .map((item) => (
+                        <Tag
+                          color={
+                            selectedReport.status === "pending"
+                              ? "yellow"
+                              : selectedReport.status === "Resolved"
+                              ? "green"
+                              : selectedReport.status === "In Progress"
+                              ? "blue"
+                              : "default"
+                          }
+                        >
+                          {selectedReport.status}
                         </Tag>
                       ))}
                 </div>
@@ -386,14 +474,12 @@ const PetFound = ({ adminName }) => {
 
                 <Title level={5}>Type of Animal</Title>
                 <div style={{ display: "flex", gap: 8 }}>
-                  {selectedReport.typeOfAnimal &&
-                    Object.entries(selectedReport.typeOfAnimal)
-                      .filter(([_, value]) => value)
-                      .map(([key]) => (
-                        <Tag key={key} color="purple">
-                          {key}
-                        </Tag>
-                      ))}
+                  {selectedReport.animalType &&
+                    selectedReport.animalType.split(",").map((item) => (
+                      <Tag key={item.trim()} color="purple">
+                        {item.trim()}
+                      </Tag>
+                    ))}
                 </div>
               </div>
             )}

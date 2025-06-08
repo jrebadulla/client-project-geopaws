@@ -97,13 +97,27 @@ const LandingPage = ({ adminName }) => {
         setPetStatusFilter(null);
         setTableData(adoptionPetsData);
       } else if (category === "closedReports") {
-        const petReportsSnapshot = await getDocs(collection(db, "reports"));
-        const petReportsData = petReportsSnapshot.docs.map((doc) => ({
+        const [straySnapshot, missingSnapshot] = await Promise.all([
+          getDocs(collection(db, "animal_reports")),
+          getDocs(collection(db, "pet_reports")),
+        ]);
+
+        const strayReports = straySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
+          report_type: "Stray",
         }));
 
+        const missingReports = missingSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          report_type: "Missing",
+        }));
+
+        const petReportsData = [...strayReports, ...missingReports];
+
         setTableData(petReportsData);
+
         const uniqueConcerns = Array.from(
           new Set(
             petReportsData
@@ -119,8 +133,6 @@ const LandingPage = ({ adminName }) => {
               : concern,
           value: concern,
         }));
-        setConcernFilters(uniqueConcerns);
-
         setConcernFilters(uniqueConcerns);
         setFilteredTableData(petReportsData);
       } else if (category === "resolvedReports") {
@@ -148,36 +160,6 @@ const LandingPage = ({ adminName }) => {
           new Set(requestsPendingData.map((item) => item.status))
         ).filter(Boolean);
         setAdoptionStatusOptions(uniqueStatuses); // Store this in state
-      } else if (category === "closedReports") {
-        const petReportsSnapshot = await getDocs(
-          query(collection(db, "reports"), where("status", "==", "Closed"))
-        );
-        const petReportsData = petReportsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setTableData(petReportsData);
-
-        const uniqueConcerns = Array.from(
-          new Set(
-            petReportsData
-              .map((doc) => doc.report_type && doc.report_type.trim())
-              .filter(Boolean)
-          )
-        ).map((concern) => ({
-          text:
-            concern === "Stray"
-              ? "Pet Found"
-              : concern === "Missing"
-              ? "Pet Lost"
-              : concern,
-          value: concern,
-        }));
-        setConcernFilters(uniqueConcerns);
-
-        setConcernFilters(uniqueConcerns);
-        setFilteredTableData(petReportsData);
       }
     } catch (error) {
       console.error("Error fetching table data:", error);
@@ -330,7 +312,7 @@ const LandingPage = ({ adminName }) => {
               .filter(([_, val]) => val === true)
               .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
               .join(", ");
-          } else if (col.dataIndex === "submittedAt" && value?.toDate) {
+          } else if (col.dataIndex === "dateTimeSpotted" && value?.toDate) {
             row[col.dataIndex] = value.toDate().toLocaleString();
           } else {
             row[col.dataIndex] =
@@ -489,8 +471,8 @@ const LandingPage = ({ adminName }) => {
         { title: "Email", dataIndex: "email", key: "email" },
         {
           title: "Date Reported",
-          dataIndex: "submittedAt",
-          key: "submittedAt",
+          dataIndex: "dateTimeSpotted",
+          key: "dateTimeSpotted",
           render: (timestamp) =>
             timestamp && timestamp.toDate
               ? timestamp.toDate().toLocaleDateString() +

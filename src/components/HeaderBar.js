@@ -42,59 +42,63 @@ const HeaderBar = () => {
   }, []);
 
   useEffect(() => {
-    if (!adminUid) {
-      console.warn("Admin UID is undefined. Unable to fetch notifications.");
-      return;
-    }
+    if (!adminUid) return;
 
-    const messagesQuery = query(
-      collection(db, "messages"),
-      where("receiver_uid", "==", adminUid),
-      where("status", "==", "unread")
-    );
-    const reportsQuery = collection(db, "reports");
+    const strayQuery = collection(db, "animal_reports");
+    const missingQuery = collection(db, "pet_reports");
 
-    const unsubscribeReports = onSnapshot(reportsQuery, (snapshot) => {
-      const reportNotifications = snapshot.docs
+    let strayData = [];
+    let missingData = [];
+
+    const updateAllNotifications = () => {
+      const allNotifications = [...strayData, ...missingData]
+        .filter((v, i, arr) => arr.findIndex((n) => n.id === v.id) === i) // remove duplicates
+        .sort((a, b) => b.timestamp - a.timestamp); // sort by most recent
+
+      setNotifications(allNotifications);
+    };
+
+    const unsubscribeStray = onSnapshot(strayQuery, (snapshot) => {
+      strayData = snapshot.docs
         .map((doc) => {
           const data = doc.data();
-
-          // Exclude "In Progress" and "Resolved"
-          if (data.status === "In Progress" || data.status === "Resolved") {
-            return null;
-          }
-
-          let link = null;
-          if (data.report_type === "Missing") {
-            link = "/pet-lost";
-          } else if (data.report_type === "Stray") {
-            link = "/pet-found";
-          }
+          if (data.status !== "pending") return null;
 
           return {
-            id: doc.id,
+            id: `stray-${doc.id}`,
             type: "pet_report",
             timestamp: data.updatedAt?.toDate() || new Date(),
-            text:
-              data.report_type === "Stray"
-                ? "New Pet Found report received"
-                : data.report_type === "Missing"
-                ? "New Pet Lost report received"
-                : "New pet report received",
-
-            link,
+            text: "New Pet Found report received",
+            link: "/pet-found",
           };
         })
-        .filter(Boolean); // Remove null entries
+        .filter(Boolean);
 
-      setNotifications((prev) => [
-        ...prev.filter((n) => n.type !== "pet_report"),
-        ...reportNotifications,
-      ]);
+      updateAllNotifications();
+    });
+
+    const unsubscribeMissing = onSnapshot(missingQuery, (snapshot) => {
+      missingData = snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          if (data.status !== "pending") return null;
+
+          return {
+            id: `missing-${doc.id}`,
+            type: "pet_report",
+            timestamp: data.updatedAt?.toDate() || new Date(),
+            text: "New Pet Lost report received",
+            link: "/pet-lost",
+          };
+        })
+        .filter(Boolean);
+
+      updateAllNotifications();
     });
 
     return () => {
-      unsubscribeReports();
+      unsubscribeStray();
+      unsubscribeMissing();
     };
   }, [adminUid]);
 
