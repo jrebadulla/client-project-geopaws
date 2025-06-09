@@ -95,7 +95,11 @@ const PetLost = ({ adminName }) => {
 
         const color = colorMap[text] || colorMap.default;
 
-        return <Tag color={color}>{text || "For Rescue"}</Tag>;
+        const capitalizedText = text
+          ? text.charAt(0).toUpperCase() + text.slice(1)
+          : "For Rescue";
+
+        return <Tag color={color}>{capitalizedText}</Tag>;
       },
     },
 
