@@ -298,18 +298,18 @@ const PetFound = ({ adminName }) => {
                         title: `Are you sure you want to mark this report as "${nextStatus}"?`,
                         content: (
                           <div>
-                            <p>
+                            {/* <p>
                               <strong>Description:</strong>{" "}
                               {selectedReport?.description || "No description"}
-                            </p>
-                            <p>
+                            </p> */}
+                            {/* <p>
                               <strong>Reported by:</strong>{" "}
                               {selectedReport?.name}
                             </p>
                             <p>
                               <strong>Location Found:</strong>{" "}
                               {selectedReport?.location}
-                            </p>
+                            </p> */}
                           </div>
                         ),
                         okText: `Yes, mark as ${nextStatus}`,
@@ -318,7 +318,7 @@ const PetFound = ({ adminName }) => {
                           try {
                             const reportRef = doc(
                               db,
-                              "pet_reports",
+                              "animal_reports",
                               selectedReport.id
                             );
                             await updateDoc(reportRef, {

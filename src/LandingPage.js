@@ -507,28 +507,33 @@ const LandingPage = ({ adminName }) => {
         { title: "Gender", dataIndex: "gender", key: "gender" },
         // { title: "Age", dataIndex: "age", key: "age" },
         { title: "Size", dataIndex: "size", key: "size" },
-        { title: "Status", dataIndex: "status", key: "status" },
+        {
+          title: "Status",
+          dataIndex: "status",
+          key: "status",
+          render: (text) => text.charAt(0).toUpperCase() + text.slice(1),
+        },
         {
           title: "No. of Animals",
           dataIndex: "numberOfAnimals",
           key: "numberOfAnimals",
         },
-        { title: "Pet Names", dataIndex: "petNames", key: "petNames" },
-        {
-          title: "Medical Conditions",
-          dataIndex: "medicalConditions",
-          key: "medicalConditions",
-        },
-        {
-          title: "Collar Description",
-          dataIndex: "collarDescription",
-          key: "collarDescription",
-        },
-        {
-          title: "Wearing Collar",
-          dataIndex: "wearingCollar",
-          key: "wearingCollar",
-        },
+        // { title: "Pet Names", dataIndex: "petNames", key: "petNames" },
+        // {
+        //   title: "Medical Conditions",
+        //   dataIndex: "medicalConditions",
+        //   key: "medicalConditions",
+        // },
+        // {
+        //   title: "Collar Description",
+        //   dataIndex: "collarDescription",
+        //   key: "collarDescription",
+        // },
+        // {
+        //   title: "Wearing Collar",
+        //   dataIndex: "wearingCollar",
+        //   key: "wearingCollar",
+        // },
         {
           title: "Behavior/Temperament",
           dataIndex: "behaviorObserved",

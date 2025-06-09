@@ -302,7 +302,7 @@ const PetLost = ({ adminName }) => {
                         title: `Are you sure you want to mark this report as "${nextStatus}"?`,
                         content: (
                           <div>
-                            <p>
+                            {/* <p>
                               <strong>Description:</strong>{" "}
                               {selectedReport?.description || "No description"}
                             </p>
@@ -313,7 +313,7 @@ const PetLost = ({ adminName }) => {
                             <p>
                               <strong>Location Found:</strong>{" "}
                               {selectedReport?.location}
-                            </p>
+                            </p> */}
                           </div>
                         ),
                         okText: `Yes, mark as ${nextStatus}`,
