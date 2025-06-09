@@ -102,17 +102,68 @@ const LandingPage = ({ adminName }) => {
           getDocs(collection(db, "pet_reports")),
         ]);
 
-        const strayReports = straySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          report_type: "Stray",
-        }));
+        const strayReports = straySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            report_type: "Stray",
+            reportId: doc.id,
+            petType: data.animalType || "N/A",
+            breed: data.breed || "N/A",
+            colorMarkings: data.colorMarkings || "N/A",
+            gender: data.gender || "N/A",
+            size: data.size || "N/A",
+            status: data.status || "N/A",
+            numberOfAnimals: data.numberOfAnimals || "N/A",
+            petNames: "N/A",
+            age: "N/A",
+            additionalNotes: data.additionalNotes || "N/A",
+            medicalConditions: "N/A",
+            collarDescription: "N/A",
+            wearingCollar: "N/A",
+            behaviorObserved: Array.isArray(data.behaviorObserved)
+              ? data.behaviorObserved
+              : [],
+            seenDate: data.seenDate || null,
+            seenTime: data.seenTime || null,
+            createdAt: data.createdAt || null,
+            imageUrls: data.imageUrls || [],
+          };
+        });
 
-        const missingReports = missingSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          report_type: "Missing",
-        }));
+        const missingReports = missingSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            report_type: "Missing",
+            reportId: data.reportId || doc.id,
+            petType: data.petType || "N/A",
+            breed: data.breed || "N/A",
+            colorMarkings: data.colorMarkings || "N/A",
+            gender: data.gender || "N/A",
+            size: data.size || "N/A",
+            status: data.status || "N/A",
+            numberOfAnimals: data.numberOfPets || "N/A",
+            petNames: data.petNames || "N/A",
+            age: data.age || "N/A",
+            additionalNotes: data.circumstances || "N/A",
+            medicalConditions: data.medicalConditions || "N/A",
+            collarDescription: data.collarDescription || "N/A",
+            wearingCollar:
+              typeof data.wearingCollar === "boolean"
+                ? data.wearingCollar
+                  ? "Yes"
+                  : "No"
+                : "N/A",
+            behaviorObserved: Array.isArray(data.temperament)
+              ? data.temperament
+              : [],
+            seenDate: data.missingDate || null,
+            seenTime: data.lastSeenTime || null,
+            createdAt: data.createdAt || null,
+            imageUrls: data.imageUrls || [],
+          };
+        });
 
         const petReportsData = [...strayReports, ...missingReports];
 
@@ -307,22 +358,27 @@ const LandingPage = ({ adminName }) => {
         const row = { no: index + 1 };
         originalColumns.forEach((col) => {
           const value = item[col.dataIndex];
-          if (col.dataIndex === "typeOfAnimal" && typeof value === "object") {
-            row[col.dataIndex] = Object.entries(value)
-              .filter(([_, val]) => val === true)
-              .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
-              .join(", ");
-          } else if (col.dataIndex === "dateTimeSpotted" && value?.toDate) {
-            row[col.dataIndex] = value.toDate().toLocaleString();
+
+          if (col.dataIndex === "seenDate" || col.dataIndex === "createdAt") {
+            row[col.dataIndex] =
+              value && typeof value.toDate === "function"
+                ? value.toDate().toLocaleString()
+                : "N/A";
+          } else if (col.dataIndex === "seenTime") {
+            row[col.dataIndex] =
+              value?.hour !== undefined && value?.minute !== undefined
+                ? `${String(value.hour).padStart(2, "0")}:${String(
+                    value.minute
+                  ).padStart(2, "0")}`
+                : "N/A";
+          } else if (Array.isArray(value)) {
+            row[col.dataIndex] = value.join(", ");
           } else {
             row[col.dataIndex] =
-              value !== undefined && value !== null
-                ? Array.isArray(value)
-                  ? value.join(", ")
-                  : value
-                : "";
+              value !== undefined && value !== null ? value : "N/A";
           }
         });
+
         return row;
       });
 
@@ -440,56 +496,66 @@ const LandingPage = ({ adminName }) => {
       ];
     } else if (category === "closedReports") {
       return [
+        { title: "Report Type", dataIndex: "report_type", key: "report_type" },
+        { title: "Pet Type", dataIndex: "petType", key: "petType" },
+        { title: "Breed", dataIndex: "breed", key: "breed" },
+        // {
+        //   title: "Color Markings",
+        //   dataIndex: "colorMarkings",
+        //   key: "colorMarkings",
+        // },
+        { title: "Gender", dataIndex: "gender", key: "gender" },
+        // { title: "Age", dataIndex: "age", key: "age" },
+        { title: "Size", dataIndex: "size", key: "size" },
+        { title: "Status", dataIndex: "status", key: "status" },
         {
-          title: "Report Type",
-          dataIndex: "report_type",
-          key: "report_type",
+          title: "No. of Animals",
+          dataIndex: "numberOfAnimals",
+          key: "numberOfAnimals",
+        },
+        { title: "Pet Names", dataIndex: "petNames", key: "petNames" },
+        {
+          title: "Medical Conditions",
+          dataIndex: "medicalConditions",
+          key: "medicalConditions",
         },
         {
-          title: "Animal Type",
-          dataIndex: "typeOfAnimal",
-          key: "typeOfAnimal",
-          render: (type) =>
-            type && typeof type === "object"
-              ? Object.entries(type)
-                  .filter(([_, value]) => value === true)
-                  .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
-                  .join(", ")
-              : "N/A",
-        },
-
-        {
-          title: "Breed",
-          dataIndex: "description",
-          key: "description",
+          title: "Collar Description",
+          dataIndex: "collarDescription",
+          key: "collarDescription",
         },
         {
-          title: "Reported By",
-          dataIndex: "name",
-          key: "name",
-        },
-        { title: "Email", dataIndex: "email", key: "email" },
-        {
-          title: "Date Reported",
-          dataIndex: "dateTimeSpotted",
-          key: "dateTimeSpotted",
-          render: (timestamp) =>
-            timestamp && timestamp.toDate
-              ? timestamp.toDate().toLocaleDateString() +
-                " " +
-                timestamp.toDate().toLocaleTimeString()
-              : "N/A",
+          title: "Wearing Collar",
+          dataIndex: "wearingCollar",
+          key: "wearingCollar",
         },
         {
-          title: "Location/Last Seen",
-          dataIndex: "location",
-          key: "location",
+          title: "Behavior/Temperament",
+          dataIndex: "behaviorObserved",
+          key: "behaviorObserved",
+          render: (value) =>
+            Array.isArray(value) && value.length > 0 ? value.join(", ") : "N/A",
         },
-        {
-          title: "Status",
-          dataIndex: "status",
-          key: "status",
-        },
+        // {
+        //   title: "Seen Date",
+        //   dataIndex: "seenDate",
+        //   key: "seenDate",
+        //   render: (timestamp) =>
+        //     timestamp && timestamp.toDate
+        //       ? timestamp.toDate().toLocaleDateString()
+        //       : "N/A",
+        // },
+        // {
+        //   title: "Seen Time",
+        //   dataIndex: "seenTime",
+        //   key: "seenTime",
+        //   render: (time) =>
+        //     time?.hour != null && time?.minute != null
+        //       ? `${String(time.hour).padStart(2, "0")}:${String(
+        //           time.minute
+        //         ).padStart(2, "0")}`
+        //       : "N/A",
+        // },
       ];
     } else if (category === "pendingReports") {
       return [
