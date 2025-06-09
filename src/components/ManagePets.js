@@ -105,7 +105,15 @@ const ManagePets = ({ adminName }) => {
 
   const columns = [
     { title: "Name", dataIndex: "pet_name", key: "pet_name" },
-    { title: "Type", dataIndex: "type", key: "type" },
+    {
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      width: 120, // ✅ Required for ellipsis to work
+      ellipsis: true, // ✅ Prevent wrap and show ...
+      render: (text) => <span style={{ whiteSpace: "nowrap" }}>{text}</span>,
+    },
+
     { title: "Age", dataIndex: "age", key: "age" },
     { title: "Color", dataIndex: "color", key: "color" },
     {

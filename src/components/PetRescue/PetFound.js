@@ -82,7 +82,7 @@ const PetFound = ({ adminName }) => {
       key: "status",
       render: (text) => {
         const colorMap = {
-          pending: "yellow",
+          pending: "gold",
           Resolved: "green",
           "In Progress": "blue",
           default: "gray",
@@ -90,7 +90,11 @@ const PetFound = ({ adminName }) => {
 
         const color = colorMap[text] || colorMap.default;
 
-        return <Tag color={color}>{text || "For Rescue"}</Tag>;
+        const capitalizedText = text
+          ? text.charAt(0).toUpperCase() + text.slice(1)
+          : "For Rescue";
+
+        return <Tag color={color}>{capitalizedText}</Tag>;
       },
     },
 
@@ -175,7 +179,7 @@ const PetFound = ({ adminName }) => {
             onChange={(key) => setActiveTab(key)}
             centered
           >
-            <TabPane tab={`pending (${strayCount})`} key="pending" />
+            <TabPane tab={`Stray (${strayCount})`} key="pending" />
 
             <TabPane
               tab={`In Progress (${inProgressCount})`}
@@ -457,7 +461,7 @@ const PetFound = ({ adminName }) => {
                         <Tag
                           color={
                             selectedReport.status === "pending"
-                              ? "yellow"
+                              ? "gold"
                               : selectedReport.status === "Resolved"
                               ? "green"
                               : selectedReport.status === "In Progress"

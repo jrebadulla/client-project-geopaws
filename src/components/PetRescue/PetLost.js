@@ -87,7 +87,7 @@ const PetLost = ({ adminName }) => {
       key: "status",
       render: (text) => {
         const colorMap = {
-          pending: "yellow",
+          pending: "gold",
           Resolved: "green",
           "In Progress": "blue",
           default: "gray",
@@ -511,7 +511,7 @@ const PetLost = ({ adminName }) => {
                         <Tag
                           color={
                             selectedReport.status === "pending"
-                              ? "yellow"
+                              ? "gold"
                               : selectedReport.status === "Resolved"
                               ? "green"
                               : selectedReport.status === "In Progress"
